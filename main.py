@@ -20,7 +20,7 @@ def main():
     cpf_atual = ""
     saldo_atual = 0.0
 
-    for funcionamento in range(5):
+    for funcionamento in range(100):
         menu()
         opcao = input("Escolha uma opção: ")
 
@@ -51,5 +51,4 @@ def main():
         else:
             print("\nOpção inválida! Digite um dos números: 1, 2, 3, 4 ou 0.")
 
-if __name__ == "__main__":
-    main()
+main()
