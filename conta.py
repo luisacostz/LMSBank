@@ -16,3 +16,11 @@ def sacar(saldo_atual, valor_saque):
     return saldo_atual
   else:
     return saldo_atual - valor_saque
+
+  
+
+def cadastrar_conta(contas, numero_conta, cpf_cliente):
+
+    conta = (numero_conta, cpf_cliente, 0.0)
+
+    contas.append(conta)
