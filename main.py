@@ -42,6 +42,16 @@ def main():
         elif opcao == "5":
             listar_agencias(agencias)
 
+        elif opcao == "6":
+            numero_busca = input("Digite o número da agência que deseja procurar: ")
+            agencia_encontrada = procurar_agencia(agencias, numero_busca)
+            if agencia_encontrada != None:
+                print("Agência Encontrada!")
+                print("Número:", agencia_encontrada[0], "- Nome:", agencia_encontrada[1])
+            else:
+                print("Agência não cadastrada no sistema.")
+
+
         elif opcao == "7":
             numero_conta = input("Digite o numero da conta: ")
             numero_agencia = input("Digite o numero da agencia: ")
