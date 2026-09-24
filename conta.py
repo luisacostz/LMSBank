@@ -3,9 +3,18 @@ def cadastrar_conta(contas, numero_conta, cpfs_vinculados, numero_agencia):
     contas.append(nova_conta)
 
 def listar_contas(contas):
-    print("\n--- Lista de Contas ---")
+    print("\nLista de Contas:")
     for i in range(len(contas)):
-        print("Conta:", contas[i][0], "- CPFs vinculados:", contas[i][1], "- Agencia:", contas[i][2], "- Saldo: R$", contas[i][3])
+        print("Conta:", contas[i][0])
+        print("CPFs:", contas[i][1])
+        print("Agencia:", contas[i][2])
+        print("Saldo: R$", contas[i][3])
+
+def procurar_conta(contas, numero_conta):
+    for i in range(len(contas)):
+        if contas[i][0] == numero_conta:
+            return contas[i]
+    return False
 
 def consultar_saldo(contas, numero_conta):
     for i in range(len(contas)):
@@ -62,3 +71,25 @@ def transferir(contas, numero_origem, numero_destino, valor):
             print("Saldo insuficiente na conta de origem.")
     else:
         print("Contas invalidas ou valor incorreto.")
+
+def montante_total_banco(contas):
+    total = 0.0
+    tam_lista = len(contas)
+    for i in range(tam_lista):
+        total = total + contas[i][3]
+    print("O banco possui um total de R$", total)
+
+def montante_total_agencia(contas, numero_agencia):
+    total = 0.0
+    tem_conta = False
+    tam_lista = len(contas)
+
+    for i in range(tam_lista):
+        if contas[i][2] == numero_agencia:
+            total = total + contas[i][3]
+            tem_conta = True
+            
+    if tem_conta == True:
+        print("O total na agencia", numero_agencia, "e R$", total)
+    else:
+        print("Esta agencia esta vazia ou nao existe.")
