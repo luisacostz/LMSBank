@@ -1,3 +1,10 @@
+'''
+Módulo: conta.py
+Autores: Luísa Costa, Murilo Santana e Sarah Beatriz
+Descrição: Este módulo contém funções para cadastrar, procurar, listar contas e realizar 
+operações bancárias - como consultar saldo, depositar, sacar e transferir.
+'''
+
 def cadastrar_conta(contas, numero_conta, cpfs_vinculados, numero_agencia):
     nova_conta = (numero_conta, cpfs_vinculados, numero_agencia, 0.0)
     contas.append(nova_conta)

@@ -1,3 +1,9 @@
+'''
+Módulo: main.py
+Autores: Luísa Costa, Murilo Santana e Sarah Beatriz
+Descrição: Este módulo contém a função principal do programa, que é responsável por exibir o menu e chamar as funções dos outros módulos de acordo com a escolha do usuário.
+'''
+
 from cliente import cadastrar_cliente, procurar_cliente, listar_clientes
 from agencia import cadastrar_agencia, procurar_agencia, listar_agencias
 from conta import cadastrar_conta, listar_contas, consultar_saldo, depositar, sacar, transferir, montante_total_banco, montante_total_agencia, procurar_conta
