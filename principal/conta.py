@@ -5,7 +5,9 @@ Descrição: Este módulo contém funções para cadastrar, procurar, listar con
 '''
 
 # Função para cadastrar uma nova conta no banco
-def cadastrar_conta(contas, numero, cliente_infomacao, numero_agencia):
+def cadastrar_conta(contas, numero, cliente_infomacao, numero_agencia, tipo):
+    tipo = tipo.strip().lower()
+    
     # Cria um dicionário para representar a conta 
     nova_conta = {
         "numero": numero,
@@ -14,6 +16,18 @@ def cadastrar_conta(contas, numero, cliente_infomacao, numero_agencia):
         "agencia": numero_agencia, 
         "saldo": 0.0 
     }
+
+    # Atributos específicos de cada conta
+    if tipo == "corrente":
+        nova_conta["limite"] = 500.0 # check especial
+    elif tipo == "poupanca":
+        nova_conta["taxa_rendimento"] = 0.01 # rendimento de 1%
+    elif tipo == "salario":
+        nova_conta["empregador"] = input("nome ou CNPJ da empresa empregadora: ')
+                                         
+    contas.append(nova_conta)
+                                         # #############Continuar daqui################
+                                         
     # Adiciona a nova conta à lista do banco
     contas.append(nova_conta)
 
