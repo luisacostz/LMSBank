@@ -31,9 +31,9 @@ def menu():
     print("12 - Transferir")
 
     # Exibe as opções de relatórios, salvamento e fechamento do sistema
-    print("--- RELATORIOS E SISTEMA ---")
-    print("13 - Relatorio do banco")
-    print("14 - Montante total por agencia")
-    print("15 - Montante total do banco")
+    print("--- RELATÓRIOS E SISTEMA ---")
+    print("13 - Montante total do banco")
+    print("14 - Montante total por agência")
+    print("15 - Agência com mais clientes")
     print("16 - Salvar")
     print("0 - Sair")

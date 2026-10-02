@@ -1,0 +1,240 @@
+'''
+Módulo: main.py
+Autores: Luísa Costa, Murilo Santana e Sarah Beatriz
+Descrição: Este módulo contém a função principal do programa, que é responsável por exibir o menu e chamar as funções dos outros módulos de acordo com a escolha do usuário.
+'''
+
+# Importa as funções dos módulos cliente, agencia, conta, menu, armazenamento e relatorio
+from cliente import cadastrar_cliente, procurar_cliente, listar_clientes
+from agencia import cadastrar_agencia, procurar_agencia, listar_agencias
+from conta import cadastrar_conta, listar_contas, consultar_saldo, depositar, sacar, transferir, procurar_conta
+from menu import menu
+from armazenamento import salvar_dados, carregar_dados
+from relatorio import montante_total_banco, montante_por_agencia, agencia_mais_clientes
+
+# Função principal do programa
+def main():
+    # Carrega os dados iniciais do sistema (clientes, agências e contas) a partir do armazenamento
+    dados_iniciais = carregar_dados()
+    clientes = dados_iniciais[0]
+    agencias = dados_iniciais[1]
+    contas = dados_iniciais[2]
+
+    rodando = True
+
+    # Loop principal do programa, que exibe o menu e processa as opções escolhidas pelo usuário
+    while rodando:
+        # Exibe o menu de opções do programa
+        menu()
+        opcao = input("Escolha uma opcao: ")
+
+        # Processa a opção escolhida pelo usuário e chama as funções correspondentes dos módulos importados
+        # 1 - Cadastrar cliente
+        if opcao == "1":
+            # Solicita ao usuário o CPF do cliente e verifica se ele já está cadastrado
+            cpf = input("CPF do cliente: ")
+            cliente_existente = procurar_cliente(clientes, cpf)
+
+            # Se o cliente não estiver cadastrado, solicita os dados restantes e chama a função para cadastrar o cliente
+            if cliente_existente == False:
+                nome = input("Nome do cliente: ")
+                data_nascimento = input("Data de nascimento: ")
+                email = input("Email: ")
+                telefone = input("Telefone: ")
+                endereco = input("Endereco: ")
+                
+                cadastrar_cliente(clientes, nome, cpf, data_nascimento, email, telefone, endereco)
+                # Salva os dados atualizados no armazenamento
+                salvar_dados(clientes, agencias, contas)
+                print("Cadastrado.")
+            else:
+                print("Este CPF ja esta no sistema!")
+
+        # 2 - Listar clientes    
+        elif opcao == "2":
+            # Chama a função para listar todos os clientes cadastrados no sistema
+            listar_clientes(clientes)
+
+        # 3 - Procurar cliente
+        elif opcao == "3":
+            # Solicita ao usuário o CPF do cliente que deseja procurar e chama a função correspondente
+            cpf_busca = input("CPF do cliente: ")
+            cliente_encontrado = procurar_cliente(clientes, cpf_busca)
+            
+            # Verifica se o cliente foi encontrado e exibe os dados correspondentes ou uma mensagem de erro
+            if cliente_encontrado:
+                print("\nDados:")
+                print("Nome:", cliente_encontrado["nome"])
+                print("CPF:", cliente_encontrado["cpf"])
+                print("Data de Nascimento:", cliente_encontrado["data_nascimento"])
+                print("Email:", cliente_encontrado["email"])
+                print("Telefone:", cliente_encontrado["telefone"])
+                print("Endereco:", cliente_encontrado["endereco"])
+            else:
+                print("\nCliente não encontrado.")
+
+        # 4 - Cadastrar agência        
+        elif opcao == "4":
+            # Solicita ao usuário o número da agência que deseja cadastrar e verifica se ela já está cadastrada
+            numero_agencia = input("Número da agência: ")
+            agencia_existente = procurar_agencia(agencias, numero_agencia)
+
+            # Se a agência não estiver cadastrada, solicita o nome da agência e chama a função para cadastrá-la
+            if agencia_existente == False: 
+                nome_agencia = input("Nome da agencia: ")
+                telefone_agencia = input("Telefone da agência: ")
+                endereco_agencia = input("Endereço da agência: ")
+                cadastrar_agencia(agencias, numero_agencia, nome_agencia, telefone_agencia, endereco_agencia)
+                salvar_dados(clientes, agencias, contas)
+                print("Cadastrado com sucesso!")
+            # Se a agência já estiver cadastrada, exibe uma mensagem de erro    
+            else:
+                print("Esta agencia ja esta no sistema!")
+
+        # 5 - Listar agências    
+        elif opcao == "5":
+            # Chama a função para listar todas as agências cadastradas no sistema
+            listar_agencias(agencias)
+
+        # 6 - Procurar agência    
+        elif opcao == "6":
+            # Solicita ao utilizador o número da agência que deseja procurar
+            agencia_busca = input("Número da agência: ")
+            agencia_encontrada = procurar_agencia(agencias, agencia_busca)
+
+            # Verifica se a agência possui dados válidos
+            if agencia_encontrada:
+                print("\nDados:")
+                print("Numero:", agencia_encontrada["numero_agencia"])
+                print("Nome:", agencia_encontrada["nome"])
+                print("Telefone:", agencia_encontrada["telefone"])
+                print("Endereco:", agencia_encontrada["endereco"])
+            else:
+                print("\nAgência não encontrada.")
+
+        # 7 - Cadastrar conta
+        elif opcao == "7":
+            # Solicita ao usuário o número da conta que deseja cadastrar e verifica se ela já está cadastrada
+            numero_conta = input("Numero da conta: ")
+            conta_existente = procurar_conta(contas, numero_conta)
+
+            # Se a conta não estiver cadastrada, solicita o número da agência e os CPFs dos titulares, e chama a função para cadastrar a conta
+            if conta_existente == False:
+                numero_agencia = input("Numero da agencia: ")
+                agencia_encontrada = procurar_agencia(agencias, numero_agencia)
+
+                # Verifica se a agência foi encontrada antes de prosseguir com o cadastro da conta
+                if agencia_encontrada:
+                    quantidade_titulares = int(input("Quantidade de titulares: "))
+                    cpfs_temporarios = []
+
+                    # Coleta e valida no sistema o CPF de cada titular informado
+                    for i in range(quantidade_titulares):
+                        cpf = input("CPF do titular: ")
+                        cliente_encontrado = procurar_cliente(clientes, cpf)
+
+                        # Se o cliente foi encontrado, adiciona o CPF à lista temporária de CPFs; caso contrário, exibe uma mensagem de erro
+                        if cliente_encontrado != False:
+                            cpfs_temporarios.append(cpf)
+                        else:
+                            print("Cliente não encontrado!")
+
+                    # Se houver pelo menos um titular válido, cria uma tupla com os CPFs e chama a função para cadastrar a conta
+                    if len(cpfs_temporarios) > 0:
+                        cpfs_vinculados = tuple(cpfs_temporarios)
+                        cadastrar_conta(contas, numero_conta, cpfs_vinculados, numero_agencia)
+                        salvar_dados(clientes, agencias, contas)
+                        print("Cadastrado!")
+                    # Se não houver titulares válidos, exibe uma mensagem de erro    
+                    else:
+                        print("Nenhum titular valido.")
+                # Se a agência não foi encontrada, exibe uma mensagem de erro        
+                else:
+                    print("Agencia nao encontrada.")
+            # Se a conta já estiver cadastrada, exibe uma mensagem de erro
+            else:
+                print("Este numero de conta ja esta no sistema!")
+
+        # 8 - Listar contas
+        elif opcao == "8":
+            # Chama a função para listar todas as contas cadastradas no sistema
+            listar_contas(contas)
+
+        # 9 - Consultar saldo
+        elif opcao == "9":
+            # Solicita ao usuário o número da conta que deseja consultar e chama a função de consultar o saldo
+            numero_conta = input("Numero da conta: ")
+            consultar_saldo(contas, numero_conta)
+
+        # 10 - Depositar
+        elif opcao == "10":
+            # Solicita ao usuário o número da conta e o valor do depósito, e chama a função de depositar
+            numero_conta = input("Numero da conta: ")
+            valor = float(input("Valor do deposito: "))
+            depositar(contas, numero_conta, valor)
+            # Salva os dados atualizados no armazenamento
+            salvar_dados(clientes, agencias, contas)
+
+        # 11 - Sacar
+        elif opcao == "11":
+            # Solicita ao usuário o número da conta e o valor do saque, e chama a função de sacar
+            numero_conta = input("Numero da conta: ")
+            valor = float(input("Valor do saque: "))
+            sacar(contas, numero_conta, valor)
+            # Salva os dados atualizados no armazenamento
+            salvar_dados(clientes, agencias, contas)
+
+        # 12 - Transferir
+        elif opcao == "12":
+            # Solicita ao usuário os números das contas de origem e destino, e o valor da transferência, e chama a função de transferir
+            numero_origem = input("Numero da conta de origem: ")
+            numero_destino = input("Numero da conta destino: ")
+            valor = float(input("Valor da transferencia: "))
+            transferir(contas, numero_origem, numero_destino, valor)
+            # Salva os dados atualizados no armazenamento
+            salvar_dados(clientes, agencias, contas)
+
+        # 13 - Montante total do banco
+        elif opcao == "13":
+            # Chama a função que calcula o montante total do banco e exibe o resultado
+            print("\n--- RELATORIO DO BANCO ---")
+            total = montante_total_banco(contas)
+            print(f"\nO montante total do banco é: R$ {total:.2f}\n")
+
+        # 14 - Montante total por agência    
+        elif opcao == "14":
+            # Pede ao usuário qual agência ele quer consultar
+            numero_agencia = input("Digite o número da agência para o relatório: ")
+            # Chama a função passando a lista de contas e a agência escolhida
+            total_agencia = montante_por_agencia(contas, numero_agencia)
+            print(f"\nO montante da agência {numero_agencia} é: R$ {total_agencia:.2f}\n")
+
+        # 15 - Agência com mais clientes
+        elif opcao == "15":
+            # Chama a função que encontra a agência com mais clientes e exibe o resultado
+            melhor_agencia = agencia_mais_clientes(contas)
+            # Verifica se a função retornou uma agência válida antes de exibir o resultado
+            if melhor_agencia:
+                print(f"\nA agência com mais clientes é: {melhor_agencia}\n")
+            else:
+                print("\nNenhuma agência encontrada.\n")
+
+        # 16 - Salvar
+        elif opcao == "16":
+            # Salva os dados do sistema (clientes, agências e contas) no armazenamento 
+            # O salvamento já é feito a cada operação, mas não sabemos se é melhor assim ou dessa forma
+            print("\nSalvando dados do sistema...\n")
+            salvar_dados(clientes, agencias, contas)
+            print("Dados salvos.")
+
+        # 0 - Sair
+        elif opcao == "0":
+            print("\nObrigado. Volte sempre! | LMS Bank.")
+            # Define a variável 'rodando' como False para encerrar o loop principal e sair do programa
+            rodando = False
+
+        # Caso o usuário digite uma opção inválida, exibe uma mensagem de erro
+        else:
+            print("\nOpção inválida! Tente novamente.")
+
+main()

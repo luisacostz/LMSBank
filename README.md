@@ -1,21 +1,19 @@
 # LMSBank
 
-Sistema bancário desenvolvido em Python para fins acadêmicos. O projeto aplica conceitos de modularização, estruturas de repetição e manipulação de listas e tuplas.
+Sistema bancário desenvolvido em Python para fins acadêmicos. O projeto aplica conceitos de modularização e simula as operações fundamentais de uma instituição financeira.
 
 ## Funcionalidades
 
-* **Gerenciamento de Clientes:** Cadastro, listagem e busca por CPF.
-* **Gerenciamento de Agências:** Criação, listagem e busca de agências.
-* **Gerenciamento de Contas:** Abertura de contas vinculadas a clientes e agências específicas.
-* **Operações Financeiras:** Consulta de saldo, realização de depósitos, saques e transferências entre contas.
-* **Relatórios:** Emissão do montante total do banco e montante filtrado por agência.
-* **Dados:** Salvamento e carregamento automático do banco de dados utilizando arquivos JSON.
+* **Gestão de Entidades:** Registo e manutenção de dados através dos módulos `cliente.py` e `agencia.py`.
+* **Operações de Conta:** Listagem, procura, consulta de saldo, depósitos e transferências implementadas no módulo `conta.py`.
+* **Relatórios e Estatísticas:** Novo módulo `relatorio.py` para visualizar o montante global do banco, montante por agência, identificar a agência com mais clientes e o número de contas conjuntas.
+* **Persistência de Dados:** Carregamento e gravação de ficheiros garantidos pelo módulo `armazenamento.py`.
 
 ## Estrutura do Projeto
 
-* `main.py`: Arquivo principal que gerencia o fluxo do programa, a repetição e a interface principal.
-* `menu.py`: Módulo responsável por exibir a interface visual de opções no console.
-* `cliente.py`: Módulo que contém a lógica de validação e armazenamento das tuplas de clientes.
-* `agencia.py`: Módulo dedicado às regras de criação e busca de agências.
-* `conta.py`: Módulo que abriga a lógica financeira matemática e a geração de relatórios de montante.
-* `armazenamento.py`: Módulo responsável pela leitura e gravação segura dos dados no arquivo `banco.json`.
+* `main.py`: Ficheiro principal que inicializa o sistema.
+* `menu.py`: Contém a interface interativa de texto com o utilizador.
+* `cliente.py` / `conta.py` / `agencia.py`: Lógica de negócio isolada por entidade.
+* `relatorio.py`: Lógica dedicada à agregação de dados e estatísticas globais.
+* `armazenamento.py`: Manipulação de ficheiros.
+* `testes/`: Diretório que contém os ficheiros de testes (ex: `teste_saque`).
