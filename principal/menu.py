@@ -10,7 +10,7 @@ def menu():
     print("\n--- CLIENTES ---")
     print("1 - Cadastrar Cliente")
     print("2 - Listar Clientes")
-    print("3 - Procurar Cliente")
+    print("3 - Procurar Cliente (por CPF)")
 
     # Exibe as opções de gestão de agências
     print("--- AGENCIAS ---")
@@ -22,18 +22,21 @@ def menu():
     print("--- CONTAS ---")
     print("7 - Cadastrar Conta")
     print("8 - Listar Contas")
+    print("9 - Procurar Conta (por número)")
+    print("10 - Procurar Contas (por CPF)")
 
     # Exibe as opções de operações bancárias
     print("--- OPERACOES ---")
-    print("9 - Consultar Saldo")
-    print("10 - Depositar")
-    print("11 - Sacar")
-    print("12 - Transferir")
+    print("11 - Consultar Saldo")
+    print("12 - Depositar")
+    print("13 - Sacar")
+    print("14 - Transferir")
 
     # Exibe as opções de relatórios, salvamento e fechamento do sistema
     print("--- RELATÓRIOS E SISTEMA ---")
-    print("13 - Montante total do banco")
-    print("14 - Montante total por agência")
-    print("15 - Agência com mais clientes")
-    print("16 - Salvar")
+    print("15 - Montante total do banco")
+    print("16 - Montante total por agência")
+    print("17 - Agência com mais clientes")
+    print("18 - Quantidade de contas conjuntas")
+    print("19 - Salvar")
     print("0 - Sair")

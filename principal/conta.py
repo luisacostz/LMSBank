@@ -5,8 +5,8 @@ Descrição: Este módulo contém funções para cadastrar, procurar, listar con
 '''
 
 # Função para cadastrar uma nova conta no banco
-def cadastrar_conta(contas, numero, cliente_infomacao, numero_agencia, tipo):
-    tipo = tipo.strip().lower()
+def cadastrar_conta(contas,numero, cliente_infomacao, numero_agencia):
+    #tipo = tipo.strip().lower()
     
     # Cria um dicionário para representar a conta 
     nova_conta = {
@@ -14,23 +14,24 @@ def cadastrar_conta(contas, numero, cliente_infomacao, numero_agencia, tipo):
         # Salva a lista de CPFs para contas conjuntas
         "clientes": cliente_infomacao,
         "agencia": numero_agencia, 
-        "saldo": 0.0 
+        "saldo": 0.0,
+       # "tipo": tipo
     }
 
+    '''
     # Atributos específicos de cada conta
     if tipo == "corrente":
-        nova_conta["limite"] = 500.0 # check especial
+        nova_conta["limite"] = 500.0 # cheque especial
     elif tipo == "poupanca":
         nova_conta["taxa_rendimento"] = 0.01 # rendimento de 1%
     elif tipo == "salario":
-        nova_conta["empregador"] = input("nome ou CNPJ da empresa empregadora: ')
-                                         
+        nova_conta["empregador"] = empregador  # Nome do empregador
+    else:
+        return False
+    '''
+    # Adiciona a nova conta à lista do banco                                     
     contas.append(nova_conta)
-                                         # #############Continuar daqui################
-                                         
-    # Adiciona a nova conta à lista do banco
-    contas.append(nova_conta)
-
+    return True
 
 # Função para listar todas as contas cadastradas no banco
 def listar_contas(contas):
@@ -40,7 +41,7 @@ def listar_contas(contas):
         # Une todos os CPFs vinculados à conta separados por vírgula
         cpfs_formatados = ", ".join(conta["clientes"])
         print(f"CPFs: {cpfs_formatados}")
-        print(f"Agência: {conta['numero_agencia']}")
+        print(f"Agência: {conta['agencia']}")
         print(f"Saldo: R$ {conta['saldo']:.2f}")
         print("------------------------")
 
@@ -52,6 +53,14 @@ def procurar_conta(contas, numero_conta):
         if conta["numero"] == numero_conta:
             return conta
     return False
+
+# Função para buscar todas as contas em que um CPF é titular
+def buscar_contas_por_cpf(contas, cpf):
+    encontradas = []
+    for conta in contas:
+        if cpf in conta["clientes"]:
+            encontradas.append(conta)
+    return encontradas
 
 
 # Função para consultar o saldo de uma conta específica

@@ -1,0 +1,61 @@
+'''
+Teste de unidade para o módulo "conta" do pacote "principal"
+Autores: Luísa Costa, Murilo Santana e Sarah Beatriz
+Descrição: Este módulo contém testes de unidade para as funções do módulo "conta.py", incluindo depósito, saque, transferência e busca de contas por CPF.
+'''
+
+import sys # Importa o módulo sys para manipulação do caminho do sistema
+import os # Importa o módulo os para manipulação de caminhos e arquivos
+
+# Adiciona a pasta raiz ao sys.path para permitir a importação do pacote "principal"
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+# Importa as funções do módulo "conta" do pacote "principal"
+from principal.conta import depositar, sacar, transferir, buscar_contas_por_cpf
+
+
+# Cria uma lista de contas para os testes, incluindo uma conta conjunta
+def criar_banco():
+    return [
+        {"numero": "12345", "clientes": ["11122233344"], "agencia": "0001", "saldo": 0.0},
+        {"numero": "67890", "clientes": ["11122233344", "55566677788"], "agencia": "0001", "saldo": 0.0}
+    ]
+
+
+# Depósito com valor positivo aumenta o saldo
+def test_deposito():
+    banco = criar_banco()
+    depositar(banco, "12345", 200.0)
+    assert banco[0]["saldo"] == 200.0
+
+
+# Saque com valor menor ou igual ao saldo diminui o saldo
+def test_saque():
+    banco = criar_banco()
+    depositar(banco, "12345", 200.0)
+    sacar(banco, "12345", 150.0)
+    assert banco[0]["saldo"] == 50.0
+
+
+# Saque maior que o saldo não altera o saldo
+def test_saque_sem_saldo():
+    banco = criar_banco()
+    depositar(banco, "12345", 100.0)
+    sacar(banco, "12345", 150.0)
+    assert banco[0]["saldo"] == 100.0
+
+
+# Transferência move o dinheiro de uma conta para a outra
+def test_transferencia():
+    banco = criar_banco()
+    depositar(banco, "12345", 300.0)
+    transferir(banco, "12345", "67890", 120.0)
+    assert banco[0]["saldo"] == 180.0
+    assert banco[1]["saldo"] == 120.0
+
+
+# A busca por CPF encontra todas as contas do titular (inclusive conjuntas)
+def test_busca_contas_por_cpf():
+    banco = criar_banco()
+    assert len(buscar_contas_por_cpf(banco, "11122233344")) == 2
+    assert len(buscar_contas_por_cpf(banco, "55566677788")) == 1
+    assert buscar_contas_por_cpf(banco, "00000000000") == []
