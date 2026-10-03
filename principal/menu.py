@@ -39,4 +39,5 @@ def menu():
     print("17 - Agência com mais clientes")
     print("18 - Quantidade de contas conjuntas")
     print("19 - Salvar")
+    print("20 - Aplicar rendimento (Poupança)")
     print("0 - Sair")
