@@ -11,6 +11,7 @@ from conta import cadastrar_conta, listar_contas, consultar_saldo, depositar, sa
 from menu import menu
 from armazenamento import salvar_dados, carregar_dados
 from relatorio import montante_total_banco, montante_por_agencia, agencia_mais_clientes, contar_contas_conjuntas
+from conta import cadastrar_conta, listar_contas, consultar_saldo, depositar, sacar, transferir, procurar_conta, buscar_contas_por_cpf, aplicar_rendimento
 
 # Função principal do programa
 def main():
@@ -112,7 +113,7 @@ def main():
             else:
                 print("\nAgência não encontrada.")
 
-        # 7 - Cadastrar conta
+       # 7 - Cadastrar conta
         elif opcao == "7":
             numero_conta = input("Numero da conta: ")
             conta_existente = procurar_conta(contas, numero_conta)
@@ -123,6 +124,20 @@ def main():
  
                 if agencia_encontrada:
                     # >>> TIPO DE CONTA <<<
+                    print("\nTipos de conta disponíveis:")
+                    print("1 - Corrente")
+                    print("2 - Poupança")
+                    print("3 - Salário")
+                    opcao_tipo = input("Escolha o tipo da conta (1/2/3): ").strip()
+
+                    mapa_tipos = {"1": "corrente", "2": "poupanca", "3": "salario"}
+                    tipo = mapa_tipos.get(opcao_tipo, "corrente")
+
+                    # Se for conta salário, solicita o empregador
+                    empregador = None
+                    if tipo == "salario":
+                        empregador = input("Nome ou CNPJ da empresa empregadora: ").strip()
+
                     texto_quantidade = input("Quantidade de titulares: ")
  
                     # Só aceita se for um número inteiro maior que zero
@@ -130,39 +145,30 @@ def main():
                         print("Quantidade de titulares inválida.")
                     else:
                         quantidade_titulares = int(texto_quantidade)
-                        # Lista para armazenar os CPFs vinculados à conta
                         cpfs_vinculados = []
                         cancelado = False
  
-                        # Repete até completar a quantidade de titulares
                         while len(cpfs_vinculados) < quantidade_titulares and cancelado == False:
-                            # Solicita ao usuário o CPF do titular da conta e verifica se ele é válido e não está duplicado
                             cpf = input(f"CPF do titular {len(cpfs_vinculados) + 1} (Enter para cancelar): ")
 
-                            # Se for um input vazio, cancela o cadastro da conta
                             if cpf == "":
                                 cancelado = True
-                            # Se o cliente não estiver cadastrado, exibe uma mensagem de erro
                             elif procurar_cliente(clientes, cpf) == False:
                                 print("Cliente não encontrado!")
-                            # Se o CPF já estiver vinculado à conta, exibe uma mensagem de erro
                             elif cpf in cpfs_vinculados:
                                 print("Este CPF já é titular desta conta!")
-                            # Se o CPF for válido e não estiver duplicado, adiciona à lista de CPFs vinculados à conta
                             else:
                                 cpfs_vinculados.append(cpf)
-                        # Se o cadastro da conta não foi cancelado, chama a função para cadastrar a conta e salva os dados atualizados no armazenamento
+
                         if cancelado:
                             print("Cadastro de conta cancelado.")
-                        # Se o cadastro da conta não foi cancelado, chama a função para cadastrar a conta e salva os dados atualizados no armazenamento
                         else:
-                            cadastrar_conta(contas, numero_conta, cpfs_vinculados, numero_agencia)
+                            # Passa 'tipo' e 'empregador' para cadastrar_conta
+                            cadastrar_conta(contas, numero_conta, cpfs_vinculados, numero_agencia, tipo, empregador)
                             salvar_dados(clientes, agencias, contas)
-                            print("Cadastrado!")
-                # Se a agência não for encontrada, exibe uma mensagem de erro
+                            print(f"Conta {tipo.capitalize()} cadastrada com sucesso!")
                 else:
                     print("Agencia nao encontrada.")
-            # Se a conta já estiver cadastrada, exibe uma mensagem de erro
             else:
                 print("Este numero de conta ja esta no sistema!")
 
@@ -206,12 +212,16 @@ def main():
 
         # 12 - Depositar
         elif opcao == "12":
-            # Solicita ao usuário o número da conta e o valor do depósito, e chama a função de depositar
             numero_conta = input("Numero da conta: ")
             valor = float(input("Valor do deposito: "))
-            # Chama a função de depositar para realizar o depósito na conta especificada
-            depositar(contas, numero_conta, valor)
-            # Salva os dados atualizados no armazenamento
+            
+            # Verifica se é conta salário para solicitar a identificação do depositante
+            conta_alvo = procurar_conta(contas, numero_conta)
+            depositante = None
+            if conta_alvo and conta_alvo.get("tipo") == "salario":
+                depositante = input("Identificação de quem está depositando (Empregador): ").strip()
+
+            depositar(contas, numero_conta, valor, depositante)
             salvar_dados(clientes, agencias, contas)
 
         # 13 - Sacar
@@ -279,5 +289,11 @@ def main():
         # Caso o usuário digite uma opção inválida, exibe uma mensagem de erro
         else:
             print("\nOpção inválida! Tente novamente.")
+
+        # 20 - Aplicar rendimento na poupança
+        elif opcao == "20":
+            numero_conta = input("Número da conta poupança: ")
+            aplicar_rendimento(contas, numero_conta)
+            salvar_dados(clientes, agencias, contas)
 
 main()
