@@ -7,7 +7,6 @@ Descrição: Este módulo contém a função principal do programa, que é respo
 # Importa as funções dos módulos cliente, agencia, conta, menu, armazenamento e relatorio
 from cliente import cadastrar_cliente, procurar_cliente, listar_clientes
 from agencia import cadastrar_agencia, procurar_agencia, listar_agencias
-from conta import cadastrar_conta, listar_contas, consultar_saldo, depositar, sacar, transferir, procurar_conta, buscar_contas_por_cpf
 from menu import menu
 from armazenamento import salvar_dados, carregar_dados
 from relatorio import montante_total_banco, montante_por_agencia, agencia_mais_clientes, contar_contas_conjuntas
@@ -280,6 +279,12 @@ def main():
             salvar_dados(clientes, agencias, contas)
             print("Dados salvos.")
 
+         # 20 - Aplicar rendimento na poupança
+        elif opcao == "20":
+            numero_conta = input("Número da conta poupança: ")
+            aplicar_rendimento(contas, numero_conta)
+            salvar_dados(clientes, agencias, contas)
+
         # 0 - Sair
         elif opcao == "0":
             print("\nObrigado. Volte sempre! | LMS Bank.")
@@ -290,10 +295,6 @@ def main():
         else:
             print("\nOpção inválida! Tente novamente.")
 
-        # 20 - Aplicar rendimento na poupança
-        elif opcao == "20":
-            numero_conta = input("Número da conta poupança: ")
-            aplicar_rendimento(contas, numero_conta)
-            salvar_dados(clientes, agencias, contas)
+       
 
 main()
