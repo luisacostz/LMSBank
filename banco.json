@@ -2,7 +2,7 @@
     "clientes": [
         {
             "nome": "Alice Barreto",
-            "cpf": "99988877766",
+            "cpf": "52998224725",
             "data_nascimento": "11111991",
             "email": "alicebarreto@gmail.com",
             "telefone": "74999112222",
@@ -10,7 +10,7 @@
         },
         {
             "nome": "Bento Costa",
-            "cpf": "55544433322",
+            "cpf": "11144477735",
             "data_nascimento": "12121992",
             "email": "b.costa@gmail.com",
             "telefone": "79998119999",
@@ -37,33 +37,65 @@
             "nome": "Filial",
             "telefone": "77778888",
             "endereco": "Zona Oeste"
+        },
+        {
+            "numero_agencia": "0003",
+            "nome": "Filial B",
+            "telefone": "77778888",
+            "endereco": "Zona Sul"
         }
     ],
     "contas": [
         {
             "numero": "1234",
             "clientes": [
-                "99988877766"
+                "52998224725"
             ],
             "agencia": "0001",
-            "saldo": 1000.0
+            "saldo": 1025.0,
+            "tipo": "corrente",
+            "limite": 500.0
         },
         {
             "numero": "5678",
             "clientes": [
-                "55544433322"
+                "11144477735"
             ],
             "agencia": "0002",
-            "saldo": 5025.0
+            "saldo": 5025.0,
+            "tipo": "poupanca",
+            "taxa_rendimento": 0.01
         },
         {
             "numero": "9012",
             "clientes": [
-                "99988877766",
+                "52998224725",
                 "98765432100"
             ],
             "agencia": "0002",
-            "saldo": 25.0
+            "saldo": 25.0,
+            "tipo": "salario",
+            "empregador": "Empresa X"
+        },
+        {
+            "numero": "3690",
+            "clientes": [
+                "98765432100"
+            ],
+            "agencia": "0003",
+            "saldo": 0.0,
+            "tipo": "corrente",
+            "limite": 500.0
+        },
+        {
+            "numero": "5555",
+            "clientes": [
+                "52998224725"
+            ],
+            "agencia": "0001",
+            "saldo": 3535.0,
+            "tipo": "poupanca",
+            "taxa_rendimento": 0.01
         }
     ]
 }

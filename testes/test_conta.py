@@ -16,8 +16,8 @@ from principal.conta import depositar, sacar, transferir, buscar_contas_por_cpf
 # Cria uma lista de contas para os testes, incluindo uma conta conjunta
 def criar_banco():
     return [
-        {"numero": "12345", "clientes": ["11122233344"], "agencia": "0001", "saldo": 0.0},
-        {"numero": "67890", "clientes": ["11122233344", "55566677788"], "agencia": "0001", "saldo": 0.0}
+        {"numero": "12345", "clientes": ["11122233344"], "agencia": "0001", "tipo": "poupanca", "saldo": 0.0},
+        {"numero": "67890", "clientes": ["11122233344", "55566677788"], "agencia": "0001", "tipo": "poupanca", "saldo": 0.0}
     ]
 
 

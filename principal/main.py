@@ -8,6 +8,7 @@ Descrição: Este módulo contém a função principal do programa, que é respo
 from cliente import cadastrar_cliente, procurar_cliente, listar_clientes
 from agencia import cadastrar_agencia, procurar_agencia, listar_agencias
 from menu import menu
+from cpf import limpar_cpf, validar_cpf
 from armazenamento import salvar_dados, carregar_dados
 from relatorio import montante_total_banco, montante_por_agencia, agencia_mais_clientes, contar_contas_conjuntas
 from conta import cadastrar_conta, listar_contas, consultar_saldo, depositar, sacar, transferir, procurar_conta, buscar_contas_por_cpf, aplicar_rendimento
@@ -31,24 +32,27 @@ def main():
         # Processa a opção escolhida pelo usuário e chama as funções correspondentes dos módulos importados
         # 1 - Cadastrar cliente
         if opcao == "1":
-            # Solicita ao usuário o CPF do cliente e verifica se ele já está cadastrado
-            cpf = input("CPF do cliente: ")
-            cliente_existente = procurar_cliente(clientes, cpf)
+            # Solicita o CPF e deixa só os números (aceita com ou sem pontos e traço)
+            cpf = limpar_cpf(input("CPF do cliente: "))
 
-            # Se o cliente não estiver cadastrado, solicita os dados restantes e chama a função para cadastrar o cliente
-            if cliente_existente == False:
+            # Primeiro valida o CPF, ANTES de pedir os outros dados
+            if validar_cpf(cpf) == False:
+                print("CPF inválido! Precisa ter 11 números e os 2 últimos dígitos (verificadores) corretos.")
+            # Depois verifica se o CPF já está cadastrado
+            elif procurar_cliente(clientes, cpf) != False:
+                print("Este CPF já está cadastrado no sistema!")
+            # Só pede os dados restantes se o CPF for válido e novo
+            else:
                 nome = input("Nome do cliente: ")
                 data_nascimento = input("Data de nascimento: ")
                 email = input("Email: ")
                 telefone = input("Telefone: ")
                 endereco = input("Endereco: ")
-                
+
+                # A própria função cadastrar_cliente já mostra a mensagem de sucesso
                 cadastrar_cliente(clientes, nome, cpf, data_nascimento, email, telefone, endereco)
                 # Salva os dados atualizados no armazenamento
                 salvar_dados(clientes, agencias, contas)
-                print("Cadastrado.")
-            else:
-                print("Este CPF ja esta no sistema!")
 
         # 2 - Listar clientes    
         elif opcao == "2":
@@ -133,14 +137,14 @@ def main():
                     tipo = mapa_tipos.get(opcao_tipo, "corrente")
 
                     # Se for conta salário, solicita o empregador
-                    empregador = None
+                    empregador = ""
                     if tipo == "salario":
                         empregador = input("Nome ou CNPJ da empresa empregadora: ").strip()
 
                     texto_quantidade = input("Quantidade de titulares: ")
  
                     # Só aceita se for um número inteiro maior que zero
-                    if int(texto_quantidade) < 1:
+                    if texto_quantidade.isdigit() == False or int(texto_quantidade) < 1:
                         print("Quantidade de titulares inválida.")
                     else:
                         quantidade_titulares = int(texto_quantidade)
@@ -148,7 +152,7 @@ def main():
                         cancelado = False
  
                         while len(cpfs_vinculados) < quantidade_titulares and cancelado == False:
-                            cpf = input(f"CPF do titular {len(cpfs_vinculados) + 1} (Enter para cancelar): ")
+                            cpf = limpar_cpf(input(f"CPF do titular {len(cpfs_vinculados) + 1} (Enter para cancelar): "))
 
                             if cpf == "":
                                 cancelado = True
@@ -194,7 +198,7 @@ def main():
          # 10 - Procurar conta por CPF do titular da conta
         elif opcao == "10":
             # Solicita ao usuário o CPF do titular da conta que deseja procurar e chama a função de buscar contas por CPF
-            cpf_busca = input("CPF do titular: ")
+            cpf_busca = limpar_cpf(input("CPF do titular: "))
             contas_do_cliente = buscar_contas_por_cpf(contas, cpf_busca)
 
             # Verifica se foram encontradas contas para o CPF fornecido e chama a função de listar contas para exibir os dados das contas encontradas, ou exibe uma mensagem de erro caso não sejam encontradas
@@ -212,35 +216,45 @@ def main():
         # 12 - Depositar
         elif opcao == "12":
             numero_conta = input("Numero da conta: ")
-            valor = float(input("Valor do deposito: "))
-            
-            # Verifica se é conta salário para solicitar a identificação do depositante
-            conta_alvo = procurar_conta(contas, numero_conta)
-            depositante = None
-            if conta_alvo and conta_alvo.get("tipo") == "salario":
-                depositante = input("Identificação de quem está depositando (Empregador): ").strip()
+            texto_valor = input("Valor do deposito: ").replace(",", ".")
 
-            depositar(contas, numero_conta, valor, depositante)
-            salvar_dados(clientes, agencias, contas)
+            # Só aceita números (com no máximo um ponto decimal)
+            if texto_valor.replace(".", "", 1).isdigit() == False:
+                print("Valor inválido! Digite apenas números.")
+            else:
+                # Verifica se é conta salário para solicitar a identificação do depositante
+                conta_alvo = procurar_conta(contas, numero_conta)
+                depositante = ""
+                if conta_alvo and conta_alvo.get("tipo") == "salario":
+                    depositante = input("Identificação de quem está depositando (Empregador): ").strip()
+
+                depositar(contas, numero_conta, float(texto_valor), depositante)
+                salvar_dados(clientes, agencias, contas)
 
         # 13 - Sacar
         elif opcao == "13":
             # Solicita ao usuário o número da conta e o valor do saque, e chama a função de sacar
             numero_conta = input("Numero da conta: ")
-            valor = float(input("Valor do saque: "))
-            sacar(contas, numero_conta, valor)
-            # Salva os dados atualizados no armazenamento
-            salvar_dados(clientes, agencias, contas)
+            texto_valor = input("Valor do saque: ").replace(",", ".")
+            if texto_valor.replace(".", "", 1).isdigit() == False:
+                print("Valor inválido! Digite apenas números.")
+            else:
+                sacar(contas, numero_conta, float(texto_valor))
+                # Salva os dados atualizados no armazenamento
+                salvar_dados(clientes, agencias, contas)
 
         # 14 - Transferir
         elif opcao == "14":
             # Solicita ao usuário os números das contas de origem e destino, e o valor da transferência, e chama a função de transferir
             numero_origem = input("Numero da conta de origem: ")
             numero_destino = input("Numero da conta destino: ")
-            valor = float(input("Valor da transferencia: "))
-            transferir(contas, numero_origem, numero_destino, valor)
-            # Salva os dados atualizados no armazenamento
-            salvar_dados(clientes, agencias, contas)
+            texto_valor = input("Valor da transferencia: ").replace(",", ".")
+            if texto_valor.replace(".", "", 1).isdigit() == False:
+                print("Valor inválido! Digite apenas números.")
+            else:
+                transferir(contas, numero_origem, numero_destino, float(texto_valor))
+                # Salva os dados atualizados no armazenamento
+                salvar_dados(clientes, agencias, contas)
 
         # 15 - Montante total do banco
         elif opcao == "15":
@@ -294,7 +308,4 @@ def main():
         # Caso o usuário digite uma opção inválida, exibe uma mensagem de erro
         else:
             print("\nOpção inválida! Tente novamente.")
-
-       
-
 main()

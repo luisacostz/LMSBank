@@ -10,7 +10,7 @@ def menu():
     print("\n--- CLIENTES ---")
     print("1 - Cadastrar Cliente")
     print("2 - Listar Clientes")
-    print("3 - Procurar Cliente (por CPF)")
+    print("3 - Procurar Cliente por CPF")
 
     # Exibe as opções de gestão de agências
     print("--- AGENCIAS ---")
@@ -22,8 +22,8 @@ def menu():
     print("--- CONTAS ---")
     print("7 - Cadastrar Conta")
     print("8 - Listar Contas")
-    print("9 - Procurar Conta (por número)")
-    print("10 - Procurar Contas (por CPF)")
+    print("9 - Procurar Conta por número")
+    print("10 - Procurar Contas por CPF")
 
     # Exibe as opções de operações bancárias
     print("--- OPERACOES ---")

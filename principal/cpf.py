@@ -6,7 +6,6 @@ Descrição: Contém funções para limpar e validar
 CPFs usando os dígitos verificadores.
 '''
 
-
 # Remove a pontuação do CPF, deixando apenas os números
 def limpar_cpf(cpf):
     # Remove os pontos
@@ -51,7 +50,7 @@ def validar_cpf(cpf):
 
     # ---------------------------------
     # Cálculo do primeiro dígito verificador
-    # ---------------------------------
+ # ---------------------------------
 
     # Começa a soma em zero
     soma = 0

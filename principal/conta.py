@@ -5,7 +5,7 @@ Descrição: Este módulo contém funções para cadastrar, procurar, listar con
 '''
 
 # Função para cadastrar uma nova conta no banco
-def cadastrar_conta(contas,numero, cliente_infomacao, numero_agencia, tipo, empregador=None):
+def cadastrar_conta(contas,numero, cliente_infomacao, numero_agencia, tipo, empregador=""):
     tipo = tipo.strip().lower()
     
     # Cria um dicionário para representar a conta 
@@ -77,7 +77,7 @@ def consultar_saldo(contas, numero_conta):
 
 
 # Função para depositar um valor em uma conta específica
-def depositar(contas, numero_conta, valor, depositante=None):
+def depositar(contas, numero_conta, valor, depositante=""):
     # Percorre a lista de contas para encontrar a conta correspondente ao número fornecido
     for conta in contas:
         if conta["numero"] == numero_conta:
@@ -87,8 +87,6 @@ def depositar(contas, numero_conta, valor, depositante=None):
 
             # Regra para conta salário: só o empregador pode depositar
             if conta["tipo"] == "salario":
-                if depositante is None:
-                    depositante = input("Identificação de quem está depositando: ")
                 if depositante != conta.get("empregador"):
                     print("Depósito recusado: conta salário só aceita depósitos do empregador cadastrado.")
                     return

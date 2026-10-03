@@ -3,8 +3,8 @@ Módulo: cliente.py
 Autores: Luísa Costa, Murilo Santana e Sarah Beatriz
 Descrição: Este módulo contém funções para cadastrar, procurar e listar clientes.
 '''
-from principal.cpf import validar_cpf, limpar_cpf
 
+from cpf import validar_cpf, limpar_cpf
 
 # Função para cadastrar um novo cliente
 def cadastrar_cliente(clientes, nome, cpf, data_nascimento, email, telefone, endereco):
@@ -25,9 +25,10 @@ def cadastrar_cliente(clientes, nome, cpf, data_nascimento, email, telefone, end
 
     # Adiciona o novo cliente à lista
     clientes.append(novo_cliente)
-
     print("Cliente cadastrado com sucesso.")
     return True
+
+
 # Função para procurar um cliente pelo CPF
 def procurar_cliente(clientes, cpf_busca):
     # Remove a pontuação do CPF pesquisado

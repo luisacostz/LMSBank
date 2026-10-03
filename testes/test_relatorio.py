@@ -4,11 +4,9 @@ Autores: Luísa Costa, Murilo Santana e Sarah Beatriz
 Descrição: Este módulo contém testes de unidade para as funções do módulo "relatorio.py", incluindo cálculo do montante total, montante por agência, agência com mais clientes e quantidade de contas conjuntas.
 '''
 
-import sys
-import os
-
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
+import sys # Importa o módulo sys para manipulação do caminho do sistema
+import os # Importa o módulo os para manipulação de caminhos e arquivos
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))) # Adiciona a pasta raiz ao sys.path para permitir a importação do pacote "principal"
 from principal.relatorio import montante_total_banco, montante_por_agencia, agencia_mais_clientes, contar_contas_conjuntas
 
 

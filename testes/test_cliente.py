@@ -1,5 +1,13 @@
+'''
+Teste de unidade para o módulo "cliente" do pacote "principal"
+Autores: Luísa Costa, Murilo Santana e Sarah Beatriz
+Descrição: Este módulo contém testes de unidade para as funções do módulo "cliente.py", incluindo cadastro e busca de clientes por CPF.
+'''
+
+# Importa os módulos necessários para os testes
 from principal.cliente import cadastrar_cliente, procurar_cliente
 
+# Testa o cadastro de um cliente com CPF válido
 def test_cadastrar_cliente_com_cpf_valido():
     clientes = []
 
@@ -12,6 +20,7 @@ def test_cadastrar_cliente_com_cpf_valido():
     assert resultado == True
     assert len(clientes) == 1
 
+# Testa o cadastro de um cliente com CPF inválido
 def test_nao_cadastrar_cliente_com_cpf_invalido():
     clientes = []
 
