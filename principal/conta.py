@@ -5,8 +5,8 @@ Descrição: Este módulo contém funções para cadastrar, procurar, listar con
 '''
 
 # Função para cadastrar uma nova conta no banco
-def cadastrar_conta(contas,numero, cliente_infomacao, numero_agencia):
-    #tipo = tipo.strip().lower()
+def cadastrar_conta(contas,numero, cliente_infomacao, numero_agencia, tipo, empregador=None):
+    tipo = tipo.strip().lower()
     
     # Cria um dicionário para representar a conta 
     nova_conta = {
@@ -15,29 +15,27 @@ def cadastrar_conta(contas,numero, cliente_infomacao, numero_agencia):
         "clientes": cliente_infomacao,
         "agencia": numero_agencia, 
         "saldo": 0.0,
-       # "tipo": tipo
+        "tipo": tipo
     }
 
-    '''
+    
     # Atributos específicos de cada conta
     if tipo == "corrente":
         nova_conta["limite"] = 500.0 # cheque especial
     elif tipo == "poupanca":
         nova_conta["taxa_rendimento"] = 0.01 # rendimento de 1%
     elif tipo == "salario":
-        nova_conta["empregador"] = empregador  # Nome do empregador
-    else:
-        return False
-    '''
+        nova_conta["empregador"] = empregador if empregador else ""  # Nome do empregador
+    
     # Adiciona a nova conta à lista do banco                                     
     contas.append(nova_conta)
-    return True
 
 # Função para listar todas as contas cadastradas no banco
 def listar_contas(contas):
     print("\nLista de Contas:")
     for conta in contas:
         print(f"Conta: {conta['numero']}")
+        print(f"Tipo: {conta.get('tipo', 'corrente').capitalize()}")
         # Une todos os CPFs vinculados à conta separados por vírgula
         cpfs_formatados = ", ".join(conta["clientes"])
         print(f"CPFs: {cpfs_formatados}")
@@ -68,25 +66,35 @@ def consultar_saldo(contas, numero_conta):
     for conta in contas:
         # Verifica se o número da conta corresponde ao número fornecido e exibe o saldo atual
         if conta["numero"] == numero_conta:
+            print(f"Tipo: {conta['tipo'].capitalize()}")
             print(f"Saldo atual: R$ {conta['saldo']:.2f}")
+            if conta["tipo"] == "corrente":
+                print(f"Cheque especial: R$ {conta.get('limite', 0.0):.2f}")
+                print(f"Saldo total disponível: R$ {(conta['saldo'] + conta.get('limite', 0.0)):.2f}")
             return
     # Se a conta não for encontrada, exibe uma mensagem de erro    
     print("Conta não encontrada.")
 
 
 # Função para depositar um valor em uma conta específica
-def depositar(contas, numero_conta, valor):
+def depositar(contas, numero_conta, valor, depositante=None):
     # Percorre a lista de contas para encontrar a conta correspondente ao número fornecido
     for conta in contas:
         if conta["numero"] == numero_conta:
-            # Verifica se o valor do depósito é positivo antes de realizar a operação
-            if valor > 0:
-                # Atualiza o saldo da conta adicionando o valor do depósito e exibe uma mensagem de sucesso
-                conta["saldo"] += valor
-                print(f"Depósito de R${valor:.2f} realizado na conta {numero_conta}.")
-            # Caso contrário, exibe uma mensagem de erro indicando que o valor do depósito deve ser positivo
-            else:
+            if valor <= 0:
                 print("O valor do depósito deve ser positivo.")
+                return
+
+            # Regra para conta salário: só o empregador pode depositar
+            if conta["tipo"] == "salario":
+                if depositante is None:
+                    depositante = input("Identificação de quem está depositando: ")
+                if depositante != conta.get("empregador"):
+                    print("Depósito recusado: conta salário só aceita depósitos do empregador cadastrado.")
+                    return
+
+            conta["saldo"] += valor
+            print(f"Depósito de R${valor:.2f} realizado na conta {numero_conta}.")
             return 
     # Se a conta não for encontrada, exibe uma mensagem de erro
     print("Conta não encontrada para depósito.")
@@ -94,20 +102,39 @@ def depositar(contas, numero_conta, valor):
 
 # Função para sacar um valor de uma conta específica
 def sacar(contas, numero_conta, valor):
-    # Percorre a lista de contas para encontrar a conta correspondente ao número fornecido
     for conta in contas:
         if conta["numero"] == numero_conta:
-            # Verifica se o valor do saque é positivo e se há saldo suficiente na conta
-            if valor > 0 and conta["saldo"] >= valor:
-                # Atualiza o saldo da conta subtraindo o valor do saque e exibe uma mensagem de sucesso
+            if valor <= 0:
+                print("O valor do saque deve ser positivo.")
+                return
+
+            # Limite disponível varia de acordo com o tipo
+            saldo_disponivel = conta["saldo"]
+            if conta["tipo"] == "corrente":
+                saldo_disponivel += conta.get("limite", 0.0)
+
+            if saldo_disponivel >= valor:
                 conta["saldo"] -= valor
                 print(f"Saque de R${valor:.2f} realizado na conta {numero_conta}.")
-            # Caso contrário, exibe uma mensagem de erro
             else:
-                print("Saldo insuficiente ou valor de saque inválido.")
-            return 
+                print("Saldo insuficiente para realizar o saque.")
+            return
     # Se a conta não for encontrada, exibe uma mensagem de erro
     print("Conta não encontrada para saque.")
+
+
+# Função para a poupança
+def aplicar_rendimento(contas, numero_conta):
+    conta = procurar_conta(contas, numero_conta)
+    if conta:
+        if conta["tipo"] == "poupanca":
+            ganho = conta["saldo"] * conta.get("taxa_rendimento", 0.01)
+            conta["saldo"] += ganho
+            print(f"Rendimento de R${ganho:.2f} creditado na conta {numero_conta}!")
+        else:
+            print("Operação inválida: esta conta não é poupança.")
+    else:
+        print("Conta não encontrada.")
 
 
 # Função para transferir um valor de uma conta para outra
@@ -118,9 +145,17 @@ def transferir(contas, numero_origem, numero_destino, valor):
 
     # Verifica se ambas as contas existem e o valor da transferência é positivo
     if conta_origem and conta_destino and valor > 0:
-        # Verifica se a conta de origem tem saldo suficiente
-        if conta_origem["saldo"] >= valor:
-            # Corrigido: atualiza o saldo diretamente nos dicionários originais
+        # Conta salário não transfere para fora
+        if conta_origem.get("tipo") == "salario":
+            print("Operação não permitida: conta salário não realiza transferências.")
+            return
+
+        # Considera o limite se for corrente
+        saldo_disponivel = conta_origem["saldo"]
+        if conta_origem.get("tipo") == "corrente":
+            saldo_disponivel += conta_origem.get("limite", 0.0)
+
+        if saldo_disponivel >= valor:
             conta_origem["saldo"] -= valor
             conta_destino["saldo"] += valor
             print("Transferência realizada com sucesso!")
