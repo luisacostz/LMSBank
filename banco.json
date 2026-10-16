@@ -43,6 +43,12 @@
             "nome": "Filial B",
             "telefone": "77778888",
             "endereco": "Zona Sul"
+        },
+        {
+            "numero_agencia": "0004",
+            "nome": "Banco Nordestino",
+            "telefone": "85649876",
+            "endereco": "Zona Leste"
         }
     ],
     "contas": [
@@ -52,7 +58,7 @@
                 "52998224725"
             ],
             "agencia": "0001",
-            "saldo": 1025.0,
+            "saldo": -45.0,
             "tipo": "corrente",
             "limite": 500.0
         },

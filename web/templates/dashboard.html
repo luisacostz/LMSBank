@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block titulo %}Relatório · LMS Bank{% endblock %}
+
+{% block conteudo %}
+<div class="page-head">
+  <h2>Relatório do banco</h2>
+</div>
+
+<div class="resumo">
+  <dl>
+    <dt>Clientes cadastrados</dt>
+    <dd>{{ dados.num_clientes }}</dd>
+  </dl>
+  <dl>
+    <dt>Agências</dt>
+    <dd>{{ dados.num_agencias }}</dd>
+  </dl>
+  <dl>
+    <dt>Contas no sistema</dt>
+    <dd>{{ dados.num_contas }}</dd>
+  </dl>
+  <dl>
+    <dt>Saldo total do banco</dt>
+    {% if dados.saldo_total is not none %}
+    <dd class="gold">R$ {{ "%.2f"|format(dados.saldo_total) }}</dd>
+    {% else %}
+    <dd class="pendente">a fazer</dd>
+    {% endif %}
+  </dl>
+  <dl>
+    <dt>Saldo médio por conta</dt>
+    {% if dados.saldo_medio is not none %}
+    <dd>R$ {{ "%.2f"|format(dados.saldo_medio) }}</dd>
+    {% else %}
+    <dd class="pendente">a fazer</dd>
+    {% endif %}
+  </dl>
+</div>
+
+<div class="detalhe-saldos">
+  <div class="cartao-saldo">
+    <h3>Maior saldo</h3>
+    {% if dados.maior_saldo is not none %}
+    <p>R$ {{ "%.2f"|format(dados.maior_saldo) }} <small>— conta {{ dados.maior_saldo_conta }}</small></p>
+    {% else %}
+    <p>—</p>
+    {% endif %}
+  </div>
+  <div class="cartao-saldo menor">
+    <h3>Menor saldo</h3>
+    {% if dados.menor_saldo is not none %}
+    <p>R$ {{ "%.2f"|format(dados.menor_saldo) }} <small>— conta {{ dados.menor_saldo_conta }}</small></p>
+    {% else %}
+    <p>—</p>
+    {% endif %}
+  </div>
+  <div class="cartao-saldo">
+    <h3>Agência com mais clientes</h3>
+    <p>{{ agencia_destaque or '—' }}</p>
+  </div>
+  <div class="cartao-saldo">
+    <h3>Contas conjuntas</h3>
+    <p>{{ contas_conjuntas }}</p>
+  </div>
+</div>
+
+<div class="form-ficha" style="max-width:100%; margin-top:1.8rem;">
+  <h3>Montante por agência</h3>
+  <form method="get" action="{{ url_for('dashboard') }}" style="display:flex; gap:0.8rem; align-items:flex-end; flex-wrap:wrap;">
+    <div class="campo" style="flex:1; min-width:200px; margin-bottom:0;">
+      <label for="agencia">Número da agência</label>
+      <input type="text" id="agencia" name="agencia" value="{{ agencia_consultada or '' }}">
+    </div>
+    <button class="botao" type="submit">Calcular</button>
+  </form>
+  {% if agencia_consultada %}
+  <p style="margin-top:1rem;">Montante da agência {{ agencia_consultada }}: <strong>R$ {{ "%.2f"|format(montante_agencia) }}</strong></p>
+  {% endif %}
+</div>
+{% endblock %}

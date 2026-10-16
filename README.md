@@ -59,3 +59,31 @@ CPFs válidos para testar: `529.982.247-25`, `111.444.777-35` e `390.533.447-05`
 * `principal/armazenamento.py`: leitura e gravação do `banco.json`.
 * `testes/`: testes automatizados, em pasta separada da estrutura do projeto (`test_cliente.py`, `test_conta.py`, `test_cpf.py` e `test_relatorio.py`). O `conftest.py` configura o caminho dos módulos para o pytest.
 * `banco.json`: dados de exemplo.
+
+## Web
+
+Além do console, o banco agora tem uma interface web (Flask + HTML + CSS) que lê e grava o mesmo `banco.json`:
+
+* `web/app.py`: rotas Flask (clientes, agências, contas, operações, relatório).
+* `web/templates/`: páginas HTML (Jinja2). `base.html` é o layout comum.
+* `web/static/css/style.css`: estilo visual.
+* `web/dashboard.py`: lógica pura do dashboard (saldo total, maior/menor, saldo, saldo médio, contas com saldo positivo e `montar_dashboard`).
+
+| Página | Rota | O que mostra |
+|--------|------|--------------|
+| Clientes | `/cli,entes` | Lista de clientes, busca por CPF e cadastro |
+| Agências | `/agencias` | Lista de agências e cadastro |
+| Contas | `/contas` | Lista de contas; `?saldo=positivo` filtra contas com saldo > 0 |
+| Operações | `/operacoes` | Depositar, sacar, transferir, consultar saldo e rendimento |
+| Relatório | `/dashboard` | Nº de clientes, agências e contas, saldo total, saldo médio, maior e menor saldo |
+
+
+### Como rodar
+
+```
+cd web
+pip install -r requirements.txt
+python app.py
+```
+
+Depois abrir `http://127.0.0.1:5000`.

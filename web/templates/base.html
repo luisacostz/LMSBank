@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block titulo %}LMS Bank{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <h1>LMS Bank</h1>
+        <span> | Sistema Bancário</span>
+      </div>
+      <nav class="tabs">
+        <a href="{{ url_for('clientes') }}" class="{{ 'active' if ativo == 'clientes' }}">Clientes</a>
+        <a href="{{ url_for('agencias') }}" class="{{ 'active' if ativo == 'agencias' }}">Agências</a>
+        <a href="{{ url_for('contas') }}" class="{{ 'active' if ativo == 'contas' }}">Contas</a>
+        <a href="{{ url_for('operacoes') }}" class="{{ 'active' if ativo == 'operacoes' }}">Operações</a>
+        <a href="{{ url_for('dashboard') }}" class="{{ 'active' if ativo == 'dashboard' }}">Relatório</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    {% with mensagens = get_flashed_messages(with_categories=true) %}
+      {% for categoria, texto in mensagens %}
+        <div class="flash {{ 'erro' if categoria == 'erro' }}">{{ texto }}</div>
+      {% endfor %}
+    {% endwith %}
+
+    {% block conteudo %}{% endblock %}
+  </main>
+  <footer class="rodape">
+    &copy; 2026 | <strong>LMSBank - Sistema Bancário</strong>. Todos os direitos reservados. | COMP0496 - Programação A
+  </footer>
+</body>
+</html>
