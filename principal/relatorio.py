@@ -3,63 +3,92 @@ Módulo: relatorio.py
 Autores: Luísa Costa, Murilo Santana e Sarah Beatriz
 Descrição: Este módulo contém funções para gerar relatórios sobre o banco, como calcular o montante total, montante por agência, agência com mais clientes e quantidade de contas conjuntas.
 """
+from functools import reduce
 
-# Função para calcular o montante total do banco
+
+# Montante total do banco usando reduce
 def montante_total_banco(contas):
-    # Inicializa a variável total com 0.0 para acumular o saldo de todas as contas
-    total = 0.0
-    # Percorre a lista de contas e soma o saldo de cada conta ao total
-    for conta in contas:
-        total += conta["saldo"]
-    return total
+    # Calcula a soma total dos saldos de todas as contas usando reduce.
+    # Retorna 0.0 caso a lista esteja vazia
+    if not contas:
+        return 0.0
+    return float(reduce(lambda acumulador, conta: acumulador + conta["saldo"], contas, 0.0))
 
 
-# Função para calcular o montante total de uma agência específica
+# Contas com saldo positivo usando filter
+def contas_com_saldo_positivo(contas):
+   # Filtra e retorna apenas as contas com saldo estritamente maior que zero.
+    return list(filter(lambda conta: conta["saldo"] > 0, contas))
+
+
+# Conta com maior saldo usando max com key
+def conta_maior_saldo(contas):
+    # Retorna o dicionário completo da conta com o maior saldo.
+    # Retorna None se a lista estiver vazia.
+    if not contas:
+        return None
+    return max(contas, key=lambda conta: conta["saldo"])
+
+
+# Conta com menor saldo usando min com key
+def conta_menor_saldo(contas):
+   # Retorna o dicionário completo da conta com o menor saldo.
+   # Retorna None se a lista estiver vazia.
+    if not contas:
+        return None
+    return min(contas, key=lambda conta: conta["saldo"])
+
+
+# Saldo médio das contas
+def saldo_medio(contas):
+    # Calcula o saldo médio das contas com proteção para divisão por zero.
+    if not contas:
+        return 0.0
+    return float(montante_total_banco(contas) / len(contas))
+
+
+# --- Apelidos (aliases) para garantir compatibilidade com os testes ---
+saldo_total_banco = montante_total_banco
+contas_saldo_positivo = contas_com_saldo_positivo
+maior_saldo = conta_maior_saldo
+menor_saldo = conta_menor_saldo
+
+
+# =====================================================================
+# Funções complementares do módulo
+# =====================================================================
+
 def montante_por_agencia(contas, numero_agencia):
-    # Inicializa a variável total_agencia com 0.0 para acumular o saldo das contas da agência
     total_agencia = 0.0
-    # Percorre a lista de contas e, se a conta pertencer à agência especificada, soma o saldo ao total_agencia
     for conta in contas:
         if conta["agencia"] == numero_agencia:
             total_agencia += conta["saldo"]
     return total_agencia
 
 
-# Função para encontrar a agência com mais clientes 
 def agencia_mais_clientes(contas):
-    # Cria um dicionário para armazenar os clientes por agência
     clientes_por_agencia = {}
-    # Percorre a lista de contas para contar os clientes únicos por agência
     for conta in contas:
-        # Acesso em O(1) pelo nome da chave correspondente
         agencia = conta["agencia"]
-        # Se a agência ainda não estiver no dicionário, inicializa uma lista vazia para ela
         if agencia not in clientes_por_agencia:
             clientes_por_agencia[agencia] = []
-        # Adiciona os CPFs dos clientes da conta à lista da agência, evitando duplicatas
         for cpf in conta["clientes"]:
             if cpf not in clientes_por_agencia[agencia]:
                 clientes_por_agencia[agencia].append(cpf)
 
-    # Inicializa variáveis para armazenar a agência com mais clientes e a quantidade máxima de clientes
     melhor_agencia = False
     maior_quantidade = 0
 
-    # Percorre o dicionário de clientes por agência para encontrar a agência com mais clientes
     for agencia in clientes_por_agencia:
         quantidade = len(clientes_por_agencia[agencia])
         if quantidade > maior_quantidade:
             maior_quantidade = quantidade
             melhor_agencia = agencia
-    # Retorna a agência com mais clientes ou False se não houver agências
     return melhor_agencia
 
 
-# Função para contar as contas conjuntas (mais de um titular)
 def contar_contas_conjuntas(contas):
-    # Inicializa a variável quantidade com 0 para contar as contas conjuntas
     quantidade = 0
-    # Percorre a lista de contas e verifica se cada conta tem mais de um cliente (titular)
     for conta in contas:
         if len(conta["clientes"]) > 1:
             quantidade += 1
