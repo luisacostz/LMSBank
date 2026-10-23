@@ -55,11 +55,9 @@ menor_saldo = conta_menor_saldo
 # =====================================================================
 
 def montante_por_agencia(contas, numero_agencia):
-    total_agencia = 0.0
-    for conta in contas:
-        if conta["agencia"] == numero_agencia:
-            total_agencia += conta["saldo"]
-    return total_agencia
+    # Compreensão de listas: pega o saldo só das contas da agência escolhida e soma
+    saldos_da_agencia = [conta["saldo"] for conta in contas if conta["agencia"] == numero_agencia]
+    return float(sum(saldos_da_agencia))
 
 
 def agencia_mais_clientes(contas):
@@ -84,9 +82,37 @@ def agencia_mais_clientes(contas):
 
 
 def contar_contas_conjuntas(contas):
-    quantidade = 0
-    for conta in contas:
-        if len(conta["clientes"]) > 1:
-            quantidade += 1
+    # Compreensão de listas: guarda só as contas com mais de um titular
+    conjuntas = [conta for conta in contas if len(conta["clientes"]) > 1]
     # Retorna a quantidade de contas conjuntas encontradas
-    return quantidade
+    return len(conjuntas)
+
+
+# =====================================================================
+# Funções com compreensão de listas (etapa 4)
+# =====================================================================
+
+# Lista só os saldos das contas
+def lista_de_saldos(contas):
+    return [conta["saldo"] for conta in contas]
+
+
+# Lista os números das contas com saldo positivo
+def numeros_contas_saldo_positivo(contas):
+    # Reaproveita o filter de contas_com_saldo_positivo e extrai só o número de cada conta
+    return [conta["numero"] for conta in contas_com_saldo_positivo(contas)]
+
+
+# Lista os nomes dos clientes que são titulares de contas com saldo positivo
+def clientes_com_saldo_positivo(clientes, contas):
+    # Conjunto (set) com os CPFs dos titulares de contas positivas
+    cpfs_positivos = {cpf for conta in contas_com_saldo_positivo(contas) for cpf in conta["clientes"]}
+    return [cliente["nome"] for cliente in clientes if cliente["cpf"] in cpfs_positivos]
+
+
+# Monta o texto das contas com saldo positivo para exibir no console
+def linhas_contas_saldo_positivo(contas):
+    return [
+        f"Conta {conta['numero']} | Agência {conta['agencia']} | {conta['tipo']} | R$ {conta['saldo']:.2f}"
+        for conta in contas_com_saldo_positivo(contas)
+    ]
