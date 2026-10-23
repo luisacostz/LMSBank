@@ -21,38 +21,22 @@
   </dl>
   <dl>
     <dt>Saldo total do banco</dt>
-    {% if dados.saldo_total is not none %}
     <dd class="gold">R$ {{ "%.2f"|format(dados.saldo_total) }}</dd>
-    {% else %}
-    <dd class="pendente">a fazer</dd>
-    {% endif %}
   </dl>
   <dl>
     <dt>Saldo médio por conta</dt>
-    {% if dados.saldo_medio is not none %}
     <dd>R$ {{ "%.2f"|format(dados.saldo_medio) }}</dd>
-    {% else %}
-    <dd class="pendente">a fazer</dd>
-    {% endif %}
   </dl>
 </div>
 
 <div class="detalhe-saldos">
   <div class="cartao-saldo">
     <h3>Maior saldo</h3>
-    {% if dados.maior_saldo is not none %}
-    <p>R$ {{ "%.2f"|format(dados.maior_saldo) }} <small>— conta {{ dados.maior_saldo_conta }}</small></p>
-    {% else %}
-    <p>—</p>
-    {% endif %}
+    <p>R$ {{ "%.2f"|format(dados.maior_saldo) }}{% if dados.maior_saldo_conta %} <small>| Conta {{ dados.maior_saldo_conta }}</small>{% endif %}</p>
   </div>
   <div class="cartao-saldo menor">
     <h3>Menor saldo</h3>
-    {% if dados.menor_saldo is not none %}
-    <p>R$ {{ "%.2f"|format(dados.menor_saldo) }} <small>— conta {{ dados.menor_saldo_conta }}</small></p>
-    {% else %}
-    <p>—</p>
-    {% endif %}
+    <p>R$ {{ "%.2f"|format(dados.menor_saldo) }}{% if dados.menor_saldo_conta %} <small>| Conta {{ dados.menor_saldo_conta }}</small>{% endif %}</p>
   </div>
   <div class="cartao-saldo">
     <h3>Agência com mais clientes</h3>

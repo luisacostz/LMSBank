@@ -23,6 +23,14 @@
             "email": "educaducarlo@outlook.com",
             "telefone": "74991664444",
             "endereco": "Rua C, 2026, Avenida. Presidente-Lula, Brasil."
+        },
+        {
+            "nome": "Sarah Beatriz",
+            "cpf": "79472372040",
+            "data_nascimento": "05/10/2000",
+            "email": "sbeatriz@gmail.com",
+            "telefone": "7998912365",
+            "endereco": "Rua Casa Nova, 13. Barra dos Coqueiros-SE."
         }
     ],
     "agencias": [
@@ -49,6 +57,12 @@
             "nome": "Banco Nordestino",
             "telefone": "85649876",
             "endereco": "Zona Leste"
+        },
+        {
+            "numero_agencia": "8456",
+            "nome": "Inova",
+            "telefone": "44569812",
+            "endereco": "Centro"
         }
     ],
     "contas": [
@@ -102,6 +116,16 @@
             "saldo": 3535.0,
             "tipo": "poupanca",
             "taxa_rendimento": 0.01
+        },
+        {
+            "numero": "9856",
+            "clientes": [
+                "79472372040"
+            ],
+            "agencia": "0002",
+            "saldo": 10000.0,
+            "tipo": "corrente",
+            "limite": 500.0
         }
     ]
 }

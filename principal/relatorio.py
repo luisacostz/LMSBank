@@ -24,19 +24,15 @@ def contas_com_saldo_positivo(contas):
 # Conta com maior saldo usando max com key
 def conta_maior_saldo(contas):
     # Retorna o dicionário completo da conta com o maior saldo.
-    # Retorna None se a lista estiver vazia.
-    if not contas:
-        return None
-    return max(contas, key=lambda conta: conta["saldo"])
+    # Retorna um dicionário vazio se a lista estiver vazia.
+    return max(contas, key=lambda conta: conta["saldo"], default={})
 
 
 # Conta com menor saldo usando min com key
 def conta_menor_saldo(contas):
-   # Retorna o dicionário completo da conta com o menor saldo.
-   # Retorna None se a lista estiver vazia.
-    if not contas:
-        return None
-    return min(contas, key=lambda conta: conta["saldo"])
+    # Retorna o dicionário completo da conta com o menor saldo.
+    # Retorna um dicionário vazio se a lista estiver vazia.
+    return min(contas, key=lambda conta: conta["saldo"], default={})
 
 
 # Saldo médio das contas
