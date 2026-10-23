@@ -4,7 +4,10 @@ Autores: Luísa Costa, Murilo Santana e Sarah Beatriz
 Descrição: Este módulo contém funções para cadastrar, procurar e listar clientes.
 '''
 
-from cpf import validar_cpf, limpar_cpf
+try:
+    from .cpf import validar_cpf, limpar_cpf
+except ImportError:
+    from cpf import validar_cpf, limpar_cpf
 
 # Função para cadastrar um novo cliente
 def cadastrar_cliente(clientes, nome, cpf, data_nascimento, email, telefone, endereco):
@@ -53,13 +56,18 @@ def listar_clientes(clientes):
     if len(clientes) == 0:
         print("Nenhum cliente cadastrado.")
     else:
-         # Percorre a lista de clientes e imprime os dados de cada um
+        # Percorre a lista de clientes e imprime os dados de cada um
         print("\n--- Lista de Clientes ---")
-        for cliente in clientes:
-            print("Nome:", cliente["nome"])
-            print("CPF:", cliente["cpf"])
-            print("Nascimento:", cliente["data_nascimento"])
-            print("Email:", cliente["email"])
-            print("Telefone:", cliente["telefone"])
-            print("Endereco:", cliente["endereco"])
-            print("-------------------------")
+        blocos = [
+            f"Nome: {cliente['nome']}\n"
+            f"CPF: {cliente['cpf']}\n"
+            f"Nascimento: {cliente['data_nascimento']}\n"
+            f"Email: {cliente['email']}\n"
+            f"Telefone: {cliente['telefone']}\n"
+            f"Endereco: {cliente['endereco']}\n"
+            "-------------------------"
+            for cliente in clientes
+        ]
+
+        for bloco in blocos:
+            print(bloco)

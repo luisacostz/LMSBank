@@ -33,16 +33,21 @@ def cadastrar_conta(contas,numero, cliente_infomacao, numero_agencia, tipo, empr
 # Função para listar todas as contas cadastradas no banco
 def listar_contas(contas):
     print("\nLista de Contas:")
-    for conta in contas:
-        print(f"Conta: {conta['numero']}")
-        print(f"Tipo: {conta.get('tipo', 'corrente').capitalize()}")
-        # Une todos os CPFs vinculados à conta separados por vírgula
-        cpfs_formatados = ", ".join(conta["clientes"])
-        print(f"CPFs: {cpfs_formatados}")
-        print(f"Agência: {conta['agencia']}")
-        print(f"Saldo: R$ {conta['saldo']:.2f}")
-        print("------------------------")
 
+    # Monta os dados de cada conta usando uma compreensão de lista
+    blocos = [
+        f"Conta: {conta['numero']}\n"
+        f"Tipo: {conta.get('tipo', 'corrente').capitalize()}\n"
+        # Une todos os CPFs vinculados à conta separados por vírgula
+        f"CPFs: {', '.join(conta['clientes'])}\n"
+        f"Agência: {conta['agencia']}\n"
+        f"Saldo: R$ {conta['saldo']:.2f}\n"
+        "------------------------"
+        for conta in contas
+    ]
+
+    for bloco in blocos:
+        print(bloco)
 
 # Função para procurar uma conta pelo número
 def procurar_conta(contas, numero_conta):
