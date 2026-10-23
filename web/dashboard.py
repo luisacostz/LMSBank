@@ -3,12 +3,8 @@ Módulo: dashboard.py
 Responsáveis: Murilo Santana e Sarah Beatriz
 
 Lógica Python pura do dashboard (sem HTML, sem Flask).
-
-ESTADO: esqueleto. Cada função abaixo devolve None até ser implementada.
-O app (app.py + templates) já está pronto para consumir estas funções:
-enquanto uma delas devolver None, a tela mostra "a fazer" no lugar do
-valor, então o site continua funcionando normalmente durante o
-desenvolvimento. É só trocar o `return None` pela implementação.
+As funções de saldo (reduce, filter, max e min) foram feitas pela Sarah em
+principal/relatorio.py e são importadas aqui, para não repetir código.
 
 Os dados chegam como no resto do projeto: listas de dicionários.
   conta   = {"numero", "clientes", "agencia", "saldo", "tipo", ...}
@@ -16,53 +12,14 @@ Os dados chegam como no resto do projeto: listas de dicionários.
   agencia = {"numero_agencia", "nome", ...}
 """
 
-
-def contas_saldo_positivo(contas):
-    """Devolve a lista só com as contas de saldo > 0.
-
-    Dica: list comprehension ou filter().
-    Usada na página /contas?saldo=positivo.
-    Obs.: lista vazia [] é um resultado válido ("nenhuma conta positiva");
-    só devolva None enquanto a função não estiver implementada.
-    """
-    # TODO (Murilo/Sarah)
-    return None
-
-
-def saldo_total_banco(contas):
-    """Devolve a soma dos saldos de todas as contas (float).
-
-    Dica: sum() + generator/comprehension.
-    """
-    # TODO (Murilo/Sarah)
-    return None
-
-
-def maior_saldo(contas):
-    """Devolve a CONTA (dict) com o maior saldo, ou None se não há contas.
-
-    Dica: max(contas, key=lambda conta: conta["saldo"]).
-    """
-    # TODO (Murilo/Sarah)
-    return None
-
-
-def menor_saldo(contas):
-    """Devolve a CONTA (dict) com o menor saldo, ou None se não há contas.
-
-    Dica: min(contas, key=lambda conta: conta["saldo"]).
-    """
-    # TODO (Murilo/Sarah)
-    return None
-
-
-def saldo_medio(contas):
-    """Devolve o saldo médio por conta (float).
-
-    Cuidado: com lista vazia, não divida por zero (devolva 0.0).
-    """
-    # TODO (Murilo/Sarah)
-    return None
+# O app.py já coloca a pasta "principal" no caminho do Python antes de importar este arquivo
+from relatorio import (
+    contas_saldo_positivo,  # Contas com saldo maior que zero (filter)
+    saldo_total_banco,      # Soma de todos os saldos (reduce)
+    maior_saldo,            # Conta com o maior saldo (max com key)
+    menor_saldo,            # Conta com o menor saldo (min com key)
+    saldo_medio,            # Média dos saldos
+)
 
 
 def montar_dashboard(clientes, agencias, contas):
@@ -82,16 +39,17 @@ def montar_dashboard(clientes, agencias, contas):
     Use None nos campos que não puder calcular (ex.: banco sem contas), pois
     o template mostra "—"/"a fazer" sem quebrar.
     """
-    # Os três contadores são triviais e já ficam prontos.
-    # Os demais: trocar None pelas chamadas às funções acima.
+    # Maior e menor saldo devolvem a conta inteira (dicionário) ou None sem contas.
+    conta_maior = maior_saldo(contas)
+    conta_menor = menor_saldo(contas)
     return {
         "num_clientes": len(clientes),
         "num_agencias": len(agencias),
         "num_contas": len(contas),
-        "saldo_total": None,
-        "saldo_medio": None,
-        "maior_saldo": None,
-        "maior_saldo_conta": None,
-        "menor_saldo": None,
-        "menor_saldo_conta": None,
+        "saldo_total": saldo_total_banco(contas) if contas else None,
+        "saldo_medio": saldo_medio(contas) if contas else None,
+        "maior_saldo": conta_maior["saldo"] if conta_maior else None,
+        "maior_saldo_conta": conta_maior["numero"] if conta_maior else None,
+        "menor_saldo": conta_menor["saldo"] if conta_menor else None,
+        "menor_saldo_conta": conta_menor["numero"] if conta_menor else None,
     }

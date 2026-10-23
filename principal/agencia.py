@@ -36,9 +36,14 @@ def listar_agencias(agencias):
     # Percorre a lista de agências e exibe os dados de cada uma
     else:
         print("\n--- LISTA DE AGENCIAS ---")
-        for agencia in agencias:
-            print("Número:", agencia["numero_agencia"])
-            print("Nome:", agencia["nome"])
-            print("Telefone:", agencia["telefone"])
-            print("Endereço:", agencia["endereco"])
-            print("--------------------------------------")
+        blocos = [
+            f"Número: {agencia['numero_agencia']}\n"
+            f"Nome: {agencia['nome']}\n"
+            f"Telefone: {agencia['telefone']}\n"
+            f"Endereço: {agencia['endereco']}\n"
+            "--------------------------------------"
+            for agencia in agencias
+        ]
+
+        for bloco in blocos:
+            print(bloco)
