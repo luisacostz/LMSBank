@@ -10,7 +10,10 @@ from agencia import cadastrar_agencia, procurar_agencia, listar_agencias
 from menu import menu
 from cpf import limpar_cpf, validar_cpf
 from armazenamento import salvar_dados, carregar_dados
-from relatorio import montante_total_banco, montante_por_agencia, agencia_mais_clientes, contar_contas_conjuntas
+from relatorio import (
+    montante_total_banco, montante_por_agencia, agencia_mais_clientes, contar_contas_conjuntas,
+    conta_maior_saldo, conta_menor_saldo, saldo_medio, linhas_contas_saldo_positivo,
+)
 from conta import cadastrar_conta, listar_contas, consultar_saldo, depositar, sacar, transferir, procurar_conta, buscar_contas_por_cpf, aplicar_rendimento
 
 # Função principal do programa
@@ -298,6 +301,48 @@ def main():
             numero_conta = input("Número da conta poupança: ")
             aplicar_rendimento(contas, numero_conta)
             salvar_dados(clientes, agencias, contas)
+
+        # 21 - Contas com saldo positivo
+        elif opcao == "21":
+            linhas = linhas_contas_saldo_positivo(contas)
+            print("\n--- CONTAS COM SALDO POSITIVO ---")
+            if linhas:
+                # Imprime cada linha montada pela compreensão de listas
+                for linha in linhas:
+                    print(linha)
+            else:
+                print("Nenhuma conta com saldo positivo.")
+            print()
+
+        # 22 - Conta com maior saldo
+        elif opcao == "22":
+            conta = conta_maior_saldo(contas)
+            if conta:
+                print(f"\nMaior saldo: conta {conta['numero']} com R$ {conta['saldo']:.2f}\n")
+            else:
+                print("\nNenhuma conta cadastrada.\n")
+
+        # 23 - Conta com menor saldo
+        elif opcao == "23":
+            conta = conta_menor_saldo(contas)
+            if conta:
+                print(f"\nMenor saldo: conta {conta['numero']} com R$ {conta['saldo']:.2f}\n")
+            else:
+                print("\nNenhuma conta cadastrada.\n")
+
+        # 24 - Dashboard do banco
+        elif opcao == "24":
+            maior = conta_maior_saldo(contas)
+            menor = conta_menor_saldo(contas)
+            print("\n===== DASHBOARD LMS BANK =====")
+            print(f"Número de clientes: {len(clientes)}")
+            print(f"Número de agências: {len(agencias)}")
+            print(f"Número de contas:   {len(contas)}")
+            print(f"Saldo total:        R$ {montante_total_banco(contas):.2f}")
+            print(f"Saldo médio:        R$ {saldo_medio(contas):.2f}")
+            print(f"Maior saldo:        R$ {maior.get('saldo', 0.0):.2f} (conta {maior.get('numero', '-')})")
+            print(f"Menor saldo:        R$ {menor.get('saldo', 0.0):.2f} (conta {menor.get('numero', '-')})")
+            print("==============================\n")
 
         # 0 - Sair
         elif opcao == "0":

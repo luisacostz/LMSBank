@@ -40,4 +40,11 @@ def menu():
     print("18 - Quantidade de contas conjuntas")
     print("19 - Salvar")
     print("20 - Aplicar rendimento (Poupança)")
+
+    # Exibe as opções de análise financeira
+    print("--- ANÁLISE FINANCEIRA ---")
+    print("21 - Contas com saldo positivo")
+    print("22 - Conta com maior saldo")
+    print("23 - Conta com menor saldo")
+    print("24 - Dashboard do banco")
     print("0 - Sair")

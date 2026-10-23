@@ -26,6 +26,7 @@ O arquivo é carregado ao iniciar o programa e salvo a cada operação que alter
 * **Contas:** cadastrar (individual ou conjunta), listar, procurar por número da conta e procurar por CPF do titular.
 * **Operações:** consultar saldo, depositar, sacar e transferir.
 * **Relatórios:** montante total do banco, montante por agência, agência com mais clientes e quantidade de contas conjuntas.
+* **Análise financeira (opções 21 a 24 do menu):** contas com saldo positivo, conta com maior saldo, conta com menor saldo e dashboard (nº de clientes, agências e contas, saldo total, saldo médio, maior e menor saldo).
 
 ## Validação de CPF
 
@@ -45,7 +46,7 @@ CPFs válidos para testar: `529.982.247-25`, `111.444.777-35` e `390.533.447-05`
 * `principal/menu.py`: exibe as opções do menu no console.
 * `principal/cliente.py`, `principal/conta.py` e `principal/agencia.py`: lógica de cada entidade.
 * `principal/cpf.py`: limpeza e validação de CPF.
-* `principal/relatorio.py`: agregação de dados e estatísticas do banco. Usa funções de alta ordem (`reduce` para o saldo total, `filter` para contas com saldo positivo, `max` e `min` com `key` para maior e menor saldo).
+* `principal/relatorio.py`: agregação de dados e estatísticas do banco. Usa funções de alta ordem (`reduce` para o saldo total, `filter` para contas com saldo positivo, `max` e `min` com `key` para maior e menor saldo) e compreensão de listas (saldos, números das contas positivas, montante por agência, contas conjuntas e linhas de exibição).
 * `principal/armazenamento.py`: leitura e gravação do `banco.json`.
 * `testes/`: testes automatizados, em pasta separada da estrutura do projeto (`test_cliente.py`, `test_conta.py`, `test_cpf.py`, `test_relatorio.py` e `test_dashboard.py`).
 * `conftest.py` (na raiz): configura o caminho das pastas `principal` e `web` para o pytest encontrar os módulos.
@@ -79,3 +80,27 @@ Na raiz do projeto (a pasta que contém conftest.py):
 
 pip install pytest
 python -m pytest
+
+
+
+## Créditos e referências
+
+### Validação de CPF (`principal/cpf.py`)
+O algoritmo dos dígitos verificadores (pesos de 10 a 2 no 1º dígito e de 11 a 2 no 2º, resto da divisão por 11 menor que 2 vira 0, e recusa de CPFs com todos os dígitos iguais) segue o método explicado nestas fontes. O código foi escrito por nós, com base nessa lógica:
+* DIO – *Como criar um validador de CPF com Python* (usa o mesmo CPF de exemplo `529.982.247-xx` que aparece neste README): https://www.dio.me/articles/16-como-criar-um-validador-de-cpf-com-python-8ea27e2db9d0
+* Valor Final – *Dígito verificador do CPF: como calcular e validar*: https://valorfinal.com.br/guia/digito-verificador-do-cpf
+* TabNews – *Como funciona um gerador de CPF (apenas o conceito)*: https://www.tabnews.com.br/cacatua/como-funciona-um-gerador-de-cpf-apenas-o-conceito
+
+### Flask (`web/app.py`)
+Rotas, `render_template`, `request`, `redirect`/`url_for`, arquivos estáticos e mensagens `flash`:
+* Documentação oficial do Flask – Quickstart: https://flask.palletsprojects.com/en/stable/quickstart/
+* Siddhartha Roy (DEV Community) – *A complete beginner friendly Python Flask tutorial*: https://dev.to/sid86dev/a-complete-beginner-friendly-python-flask-tutorial-learn-from-basic-template-rendering-to-deploying-in-web-servers-5ack
+* Projeto de apoio indicado pelo professor: https://github.com/AnotherOne07/sistema-bancario-progA
+
+### HTML (`web/templates/`)
+* MDN Web Docs – Aprender HTML: https://developer.mozilla.org/pt-BR/docs/Learn/HTML
+* web.dev – Aprenda HTML: https://web.dev/learn/html/welcome?hl=pt-BR
+
+### CSS (`web/static/css/style.css`)
+* MDN Web Docs – Primeiros passos com CSS: https://developer.mozilla.org/pt-BR/docs/Learn/CSS/First_steps
+* web.dev – Aprenda CSS: https://web.dev/learn/css?hl=pt-br
