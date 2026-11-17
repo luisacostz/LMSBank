@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block titulo %}Operações · LMS Bank{% endblock %}
+
+{% block conteudo %}
+<div class="page-head">
+  <h2>Operações</h2>
+</div>
+
+{% if resultado_saldo %}
+<div class="form-ficha" style="max-width:100%; margin-bottom:1.8rem;">
+  <h3>Resultado da consulta — conta {{ resultado_saldo.numero }}</h3>
+  <p style="white-space:pre-line; margin:0;">{{ resultado_saldo.texto }}</p>
+</div>
+{% endif %}
+
+<div class="grade-operacoes">
+
+  <form class="form-ficha" method="post" action="{{ url_for('op_depositar') }}">
+    <h3>Depositar</h3>
+    <div class="campo">
+      <label for="dep_numero">Número da conta</label>
+      <input type="text" id="dep_numero" name="numero_conta" required>
+    </div>
+    <div class="campo">
+      <label for="dep_valor">Valor</label>
+      <input type="text" id="dep_valor" name="valor" placeholder="0,00" required>
+    </div>
+    <div class="campo">
+      <label for="dep_depositante">Depositante (só p/ conta salário)</label>
+      <input type="text" id="dep_depositante" name="depositante">
+    </div>
+    <button class="botao" type="submit">Depositar</button>
+  </form>
+
+  <form class="form-ficha" method="post" action="{{ url_for('op_sacar') }}">
+    <h3>Sacar</h3>
+    <div class="campo">
+      <label for="saq_numero">Número da conta</label>
+      <input type="text" id="saq_numero" name="numero_conta" required>
+    </div>
+    <div class="campo">
+      <label for="saq_valor">Valor</label>
+      <input type="text" id="saq_valor" name="valor" placeholder="0,00" required>
+    </div>
+    <button class="botao" type="submit">Sacar</button>
+  </form>
+
+  <form class="form-ficha" method="post" action="{{ url_for('op_transferir') }}">
+    <h3>Transferir</h3>
+    <div class="campo">
+      <label for="tr_origem">Conta de origem</label>
+      <input type="text" id="tr_origem" name="numero_origem" required>
+    </div>
+    <div class="campo">
+      <label for="tr_destino">Conta de destino</label>
+      <input type="text" id="tr_destino" name="numero_destino" required>
+    </div>
+    <div class="campo">
+      <label for="tr_valor">Valor</label>
+      <input type="text" id="tr_valor" name="valor" placeholder="0,00" required>
+    </div>
+    <button class="botao" type="submit">Transferir</button>
+  </form>
+
+  <form class="form-ficha" method="post" action="{{ url_for('op_saldo') }}">
+    <h3>Consultar saldo</h3>
+    <div class="campo">
+      <label for="sal_numero">Número da conta</label>
+      <input type="text" id="sal_numero" name="numero_conta" required>
+    </div>
+    <button class="botao" type="submit">Consultar</button>
+  </form>
+
+  <form class="form-ficha" method="post" action="{{ url_for('op_rendimento') }}">
+    <h3>Aplicar rendimento (poupança)</h3>
+    <div class="campo">
+      <label for="rend_numero">Número da conta poupança</label>
+      <input type="text" id="rend_numero" name="numero_conta" required>
+    </div>
+    <button class="botao" type="submit">Aplicar rendimento</button>
+  </form>
+
+</div>
+{% endblock %}

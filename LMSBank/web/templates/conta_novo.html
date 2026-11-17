@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block titulo %}Cadastrar conta · LMS Bank{% endblock %}
+
+{% block conteudo %}
+<div class="page-head">
+  <h2>Cadastrar conta</h2>
+</div>
+
+<form class="form-ficha" method="post" action="{{ url_for('conta_novo') }}">
+  <div class="campo">
+    <label for="numero">Número da conta</label>
+    <input type="text" id="numero" name="numero" required>
+  </div>
+  <div class="campo">
+    <label for="numero_agencia">Agência</label>
+    <select id="numero_agencia" name="numero_agencia" required>
+      <option value="" disabled selected>Selecione...</option>
+      {% for agencia in agencias %}
+      <option value="{{ agencia.numero_agencia }}">{{ agencia.numero_agencia }} — {{ agencia.nome }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="campo">
+    <label for="tipo">Tipo de conta</label>
+    <select id="tipo" name="tipo" required>
+      <option value="corrente">Corrente (Cheque Especial de R$ 500,00)</option>
+      <option value="poupanca">Poupança (Rende 1% ao aplicar rendimento)</option>
+      <option value="salario">Salário (Recebe depósito apenas do empregador)</option>
+    </select>
+  </div>
+  <div class="campo">
+    <label for="empregador">Empregador (somente conta salário)</label>
+    <input type="text" id="empregador" name="empregador">
+  </div>
+  <div class="campo">
+    <label for="titulares">CPF dos titulares</label>
+    <textarea id="titulares" name="titulares" required placeholder="529.982.247-25, 111.444.777-35"></textarea>
+    <small>Separe por vírgula. Mais de um CPF = conta conjunta. Todos precisam já estar cadastrados como clientes.</small>
+  </div>
+  <button class="botao" type="submit">Cadastrar</button>
+  <a class="botao secundario" href="{{ url_for('contas') }}">Cancelar</a>
+</form>
+{% endblock %}

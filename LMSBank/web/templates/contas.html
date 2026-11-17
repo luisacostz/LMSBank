@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block titulo %}Contas · LMS Bank{% endblock %}
+
+{% block conteudo %}
+<div class="page-head">
+  <div>
+    <h2>Contas</h2>
+    <p>
+      {% if somente_positivas %}
+        {{ contas|length }} de {{ total_contas }} conta(s) com saldo acima de R$ 0,00.
+      {% else %}
+        {{ contas|length }} conta(s) cadastrada(s) no sistema.
+      {% endif %}
+    </p>
+  </div>
+  <a class="botao" href="{{ url_for('conta_novo') }}">+ Cadastrar conta</a>
+</div>
+
+<p style="margin: -0.6rem 0 1.4rem;">
+  {% if somente_positivas %}
+    <a href="{{ url_for('contas') }}">Mostrar todas as contas</a>
+  {% else %}
+    <a href="{{ url_for('contas', saldo='positivo') }}">Mostrar só contas com saldo positivo</a>
+  {% endif %}
+</p>
+
+{% if contas %}
+<table class="ledger">
+  <thead>
+    <tr>
+      <th>Conta</th>
+      <th>Agência</th>
+      <th>Tipo</th>
+      <th>Titular(es)</th>
+      <th class="valor">Saldo</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for conta in contas %}
+    <tr>
+      <td class="tabular">{{ conta.numero }}</td>
+      <td class="tabular">{{ conta.agencia }}</td>
+      <td>{{ conta.tipo|capitalize }}</td>
+      <td class="tabular">{{ conta.clientes|join(', ') }}</td>
+      <td class="valor tabular">R$ {{ "%.2f"|format(conta.saldo) }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p class="vazio">{{ 'Nenhuma conta com saldo positivo no momento.' if somente_positivas else 'Nenhuma conta cadastrada ainda.' }}</p>
+{% endif %}
+{% endblock %}
