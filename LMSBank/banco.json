@@ -1,9 +1,0 @@
-{
-  "agencia": {"numero_agencia": "0001", "nome": "Sede", "telefone": "1111-2222", "endereco": "Rua Principal, 123. Centro, Aracaju, Sergipe."},
-  "clientes": [
-    {"nome": "Alice Barreto Costa", "cpf": "52998224725", "data_nascimento": "15/05/1995", "email": "abc@gmail.com", "telefone": "79999123456", "endereco": "Rua Secundária, 456. Bairro, Aracaju, Sergipe."}
-  ],
-  "contas": [
-    {"numero": "1", "cliente_cpf": "52998224725", "saldo": 100.0, "tipo": "corrente", "limite": 500.0}
-  ]
-}

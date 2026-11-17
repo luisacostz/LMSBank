@@ -1,0 +1,94 @@
+@startuml LMSBank
+skinparam classAttributeIconSize 0
+
+class Banco <<Singleton>> {
+  - {static} _instancia : Banco
+  - agencia : Agencia
+  - clientes : List<Cliente>
+  - contas : List<Conta>
+  + {static} get_instancia() : Banco
+  + iniciar() : void
+  + encerrar() : void
+  + cadastrar_cliente(cliente) : void
+  + procurar_cliente(cpf) : Cliente
+  + cadastrar_conta(conta) : void
+  + procurar_conta(numero) : Conta
+  + montar_dashboard() : Dashboard
+}
+
+class Agencia {
+  - numero_agencia : str
+  - nome : str
+  - telefone : str
+  - endereco : str
+  - contas : List<Conta>
+  + adicionar_conta(conta) : void
+  + listar_contas() : List<Conta>
+  + montante_total() : float
+  + to_dict() : dict
+  + {static} from_dict(dados) : Agencia
+}
+
+class Cliente {
+  - nome : str
+  - cpf : str
+  - data_nascimento : str
+  - email : str
+  - telefone : str
+  - endereco : str
+  - contas : List<Conta>
+  + adicionar_conta(conta) : void
+  + listar_contas() : List<Conta>
+  + saldo_total() : float
+  + to_dict() : dict
+  + {static} from_dict(dados) : Cliente
+}
+
+abstract class Conta {
+  - numero : str
+  - saldo : float
+  - cliente : Cliente
+  - agencia : Agencia
+  + depositar(valor) : void
+  + sacar(valor) : void
+  + transferir(destino, valor) : void
+  + consultar_saldo() : float
+  # {abstract} saldo_disponivel() : float
+  + {abstract} tipo() : str
+  + to_dict() : dict
+}
+
+class ContaCorrente {
+  - limite : float = 500.0
+  # saldo_disponivel() : float
+  + tipo() : str
+}
+
+class ContaPoupanca {
+  - taxa_rendimento : float = 0.01
+  # saldo_disponivel() : float
+  + aplicar_rendimento() : float
+  + tipo() : str
+}
+
+class Dashboard {
+  - num_clientes : int
+  - num_contas : int
+  - saldo_total : float
+  - saldo_medio : float
+  - maior_saldo : float
+  - maior_saldo_conta : str
+  - menor_saldo : float
+  - menor_saldo_conta : str
+}
+
+Banco "1" o-- "1" Agencia
+Banco "1" o-- "0..*" Cliente
+Banco "1" o-- "0..*" Conta
+Banco ..> Dashboard : gera
+Agencia "1" --> "0..*" Conta : agrupa
+Cliente "1" <-- "0..*" Conta : titular de
+Conta "0..*" --> "1" Agencia
+Conta <|-- ContaCorrente
+Conta <|-- ContaPoupanca
+@enduml

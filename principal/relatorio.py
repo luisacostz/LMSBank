@@ -42,6 +42,13 @@ def saldo_medio(contas):
         return 0.0
     return float(montante_total_banco(contas) / len(contas))
 
+def linhas_contas_saldo_positivo(contas):
+    # Retorna uma lista de strings formatadas para cada conta com saldo positivo.
+    return [
+        f"Conta: {conta['numero_conta']}, Agência: {conta['agencia']}, Saldo: R$ {conta['saldo']:.2f}" 
+        for conta in contas_com_saldo_positivo(contas)
+    ]   
+
 
 # --- Apelidos (aliases) para garantir compatibilidade com os testes ---
 saldo_total_banco = montante_total_banco
