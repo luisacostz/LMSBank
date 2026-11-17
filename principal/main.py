@@ -4,353 +4,304 @@ Autores: Luísa Costa, Murilo Santana e Sarah Beatriz
 Descrição: Este módulo contém a função principal do programa, que é responsável por exibir o menu e chamar as funções dos outros módulos de acordo com a escolha do usuário.
 '''
 
-# Importa as funções dos módulos cliente, agencia, conta, menu, armazenamento e relatorio
-from cliente import cadastrar_cliente, procurar_cliente, listar_clientes
-from agencia import cadastrar_agencia, procurar_agencia, listar_agencias
-from menu import menu
+"""
+Módulo: main.py
+Autores: Luísa Costa, Murilo Santana e Sarah Beatriz
+Descrição: Ponto de entrada da aplicação via console, gerenciando o menu interativo, entrada de dados e chamadas às operações do banco.
+"""
+
+# Importa as classes principais do domínio, fábrica de contas, validadores, exceções e o menu
+from banco import Banco
+from cliente import Cliente
+from conta_factory import ContaFactory
 from cpf import limpar_cpf, validar_cpf
-from armazenamento import salvar_dados, carregar_dados
-from relatorio import (
-    montante_total_banco, montante_por_agencia, agencia_mais_clientes, contar_contas_conjuntas,
-    conta_maior_saldo, conta_menor_saldo, saldo_medio, linhas_contas_saldo_positivo,
-)
-from conta import cadastrar_conta, listar_contas, consultar_saldo, depositar, sacar, transferir, procurar_conta, buscar_contas_por_cpf, aplicar_rendimento
+from excecoes import BancoError, OperacaoInvalidaError, ValorInvalidoError
+from menu import menu
 
-# Função principal do programa
+# Mapeia as opções numéricas do console para os tipos internos de conta e seus nomes de exibição
+TIPOS_CONTA = {"1": "corrente", "2": "poupanca"}
+NOMES_TIPO = {"corrente": "Corrente", "poupanca": "Poupança"}
+
+
+# Retorna a agência única do banco ou lança erro caso não esteja cadastrada
+def obter_agencia(banco):
+    if banco.agencia is None:
+        raise OperacaoInvalidaError("O banco não tem agência cadastrada.")
+    return banco.agencia
+
+
+# Busca um cliente pelo CPF ou lança erro caso não exista
+def obter_cliente(banco, cpf):
+    cliente = banco.procurar_cliente(cpf)
+    if cliente is None:
+        raise OperacaoInvalidaError("Cliente não encontrado.")
+    return cliente
+
+
+# Busca uma conta pelo número ou lança erro caso não exista
+def obter_conta(banco, numero):
+    conta = banco.procurar_conta(numero)
+    if conta is None:
+        raise OperacaoInvalidaError("Conta não encontrada.")
+    return conta
+
+
+# Lê um valor monetário do teclado e converte para float
+def ler_valor(rotulo):
+    texto = input(rotulo).strip().replace(",", ".")
+    try:
+        return float(texto)
+    except ValueError:
+        raise ValorInvalidoError("Valor inválido! Digite apenas números.")
+
+
+# Exibe no console os dados completos de um cliente
+def exibir_cliente(cliente):
+    print(f"Nome: {cliente.nome}")
+    print(f"CPF: {cliente.cpf}")
+    print(f"Data de Nascimento: {cliente.data_nascimento}")
+    print(f"Email: {cliente.email}")
+    print(f"Telefone: {cliente.telefone}")
+    print(f"Endereco: {cliente.endereco}")
+    print(f"Contas: {len(cliente.contas)}")
+    print(f"Saldo total: R$ {cliente.saldo_total():.2f}")
+
+
+# Exibe no console o resumo de uma conta
+def exibir_conta(conta):
+    titular = conta.cliente.nome if conta.cliente else "-"
+    tipo = NOMES_TIPO.get(conta.tipo(), conta.tipo())
+    print(f"Conta {conta.numero} | {tipo} | Titular: {titular} | Saldo: R$ {conta.saldo:.2f}")
+
+
+# Solicita os dados, valida o CPF e cadastra um novo cliente no banco
+def cadastrar_cliente(banco):
+    cpf = limpar_cpf(input("CPF do cliente: "))
+    if not validar_cpf(cpf):
+        print("CPF inválido! Precisa ter 11 números e os 2 últimos dígitos (verificadores) corretos.")
+        return
+    if banco.procurar_cliente(cpf) is not None:
+        print("Este CPF já está cadastrado no sistema!")
+        return
+    nome = input("Nome do cliente: ")
+    data_nascimento = input("Data de nascimento: ")
+    email = input("Email: ")
+    telefone = input("Telefone: ")
+    endereco = input("Endereco: ")
+    cliente = Cliente(nome=nome, cpf=cpf, data_nascimento=data_nascimento,
+                      email=email, telefone=telefone, endereco=endereco)
+    banco.cadastrar_cliente(cliente)
+    print("Cliente cadastrado com sucesso!")
+
+
+# Lista todos os clientes cadastrados no banco
+def listar_clientes(banco):
+    if not banco.clientes:
+        print("\nNenhum cliente cadastrado.")
+        return
+    print("\n--- CLIENTES ---")
+    for cliente in banco.clientes:
+        print(f"{cliente.nome} | CPF: {cliente.cpf} | Contas: {len(cliente.contas)} | Saldo total: R$ {cliente.saldo_total():.2f}")
+
+
+# Consulta e exibe os dados de um cliente a partir do CPF
+def procurar_cliente(banco):
+    cpf = limpar_cpf(input("CPF do cliente: "))
+    cliente = obter_cliente(banco, cpf)
+    print("\nDados:")
+    exibir_cliente(cliente)
+
+
+# Exibe os dados cadastrais e o montante total da agência única do banco
+def ver_agencia(banco):
+    agencia = obter_agencia(banco)
+    print("\nDados:")
+    print(f"Numero: {agencia.numero_agencia}")
+    print(f"Nome: {agencia.nome}")
+    print(f"Telefone: {agencia.telefone}")
+    print(f"Endereco: {agencia.endereco}")
+    print(f"Contas: {len(agencia.listar_contas())}")
+    print(f"Montante total: R$ {agencia.montante_total():.2f}")
+
+
+# Cria e vincula uma nova conta (Corrente ou Poupança) a um cliente existente
+def cadastrar_conta(banco):
+    agencia = obter_agencia(banco)
+    numero = input("Numero da conta: ").strip()
+    if numero == "":
+        print("Número da conta inválido.")
+        return
+    if banco.procurar_conta(numero) is not None:
+        print("Este numero de conta ja esta no sistema!")
+        return
+    cpf = limpar_cpf(input("CPF do titular: "))
+    cliente = obter_cliente(banco, cpf)
+    print("\nTipos de conta disponíveis:")
+    print("1 - Corrente")
+    print("2 - Poupança")
+    tipo = TIPOS_CONTA.get(input("Escolha o tipo da conta (1/2): ").strip())
+    if tipo is None:
+        print("Tipo de conta inválido.")
+        return
+    conta = ContaFactory.criar(tipo, numero, cliente=cliente, agencia=agencia)
+    banco.cadastrar_conta(conta)
+    print(f"Conta {NOMES_TIPO[tipo]} cadastrada com sucesso!")
+
+
+# Lista todas as contas cadastradas no banco
+def listar_contas(banco):
+    if not banco.contas:
+        print("\nNenhuma conta cadastrada.")
+        return
+    print("\n--- CONTAS ---")
+    for conta in banco.contas:
+        exibir_conta(conta)
+
+
+# Busca e exibe uma conta específica pelo número
+def procurar_conta(banco):
+    conta = obter_conta(banco, input("Numero da conta: ").strip())
+    exibir_conta(conta)
+
+
+# Lista todas as contas pertencentes a um determinado CPF
+def procurar_contas_por_cpf(banco):
+    cpf = limpar_cpf(input("CPF do titular: "))
+    cliente = obter_cliente(banco, cpf)
+    contas = cliente.listar_contas()
+    if not contas:
+        print("\nNenhuma conta encontrada para este CPF.")
+        return
+    for conta in contas:
+        exibir_conta(conta)
+
+
+# Exibe o saldo atual e o saldo disponível (considerando limite) de uma conta
+def consultar_saldo(banco):
+    conta = obter_conta(banco, input("Numero da conta: ").strip())
+    print(f"\nSaldo: R$ {conta.consultar_saldo():.2f}")
+    print(f"Disponível para uso: R$ {conta.saldo_disponivel():.2f}")
+
+
+# Realiza um depósito na conta informada
+def depositar(banco):
+    conta = obter_conta(banco, input("Numero da conta: ").strip())
+    conta.depositar(ler_valor("Valor do deposito: "))
+    print(f"Depósito realizado. Saldo atual: R$ {conta.saldo:.2f}")
+
+
+# Realiza um saque na conta informada
+def sacar(banco):
+    conta = obter_conta(banco, input("Numero da conta: ").strip())
+    conta.sacar(ler_valor("Valor do saque: "))
+    print(f"Saque realizado. Saldo atual: R$ {conta.saldo:.2f}")
+
+
+# Realiza uma transferência entre duas contas
+def transferir(banco):
+    origem = obter_conta(banco, input("Numero da conta de origem: ").strip())
+    destino = obter_conta(banco, input("Numero da conta destino: ").strip())
+    origem.transferir(destino, ler_valor("Valor da transferencia: "))
+    print(f"Transferência realizada. Saldo atual da origem: R$ {origem.saldo:.2f}")
+
+
+# Exibe o montante financeiro total do banco
+def montante_total(banco):
+    total = obter_agencia(banco).montante_total()
+    print("\n--- RELATORIO DO BANCO ---")
+    print(f"\nO montante total do banco é: R$ {total:.2f}\n")
+
+
+# Filtra e exibe apenas as contas com saldo positivo
+def contas_saldo_positivo(banco):
+    positivas = list(filter(lambda conta: conta.saldo > 0, banco.contas))
+    print("\n--- CONTAS COM SALDO POSITIVO ---")
+    if not positivas:
+        print("Nenhuma conta com saldo positivo.")
+    for conta in positivas:
+        exibir_conta(conta)
+    print()
+
+
+# Exibe a conta com o maior saldo do banco
+def conta_maior_saldo(banco):
+    conta = max(banco.contas, key=lambda c: c.saldo, default=None)
+    if conta is None:
+        print("\nNenhuma conta cadastrada.\n")
+        return
+    print(f"\nMaior saldo: conta {conta.numero} com R$ {conta.saldo:.2f}\n")
+
+
+# Exibe a conta com o menor saldo do banco
+def conta_menor_saldo(banco):
+    conta = min(banco.contas, key=lambda c: c.saldo, default=None)
+    if conta is None:
+        print("\nNenhuma conta cadastrada.\n")
+        return
+    print(f"\nMenor saldo: conta {conta.numero} com R$ {conta.saldo:.2f}\n")
+
+
+# Exibe o painel geral (Dashboard) com os indicadores consolidados do banco
+def mostrar_dashboard(banco):
+    dados = banco.montar_dashboard()
+    maior_conta = dados.maior_saldo_conta or "-"
+    menor_conta = dados.menor_saldo_conta or "-"
+    print("\n===== DASHBOARD LMS BANK =====")
+    print(f"Número de clientes: {dados.num_clientes}")
+    print(f"Número de agências: {dados.num_agencias}")
+    print(f"Número de contas:   {dados.num_contas}")
+    print(f"Saldo total:        R$ {dados.saldo_total:.2f}")
+    print(f"Saldo médio:        R$ {dados.saldo_medio:.2f}")
+    print(f"Maior saldo:        R$ {dados.maior_saldo:.2f} (conta {maior_conta})")
+    print(f"Menor saldo:        R$ {dados.menor_saldo:.2f} (conta {menor_conta})")
+    print("==============================\n")
+
+
+# Dicionário que associa cada opção do menu à sua respectiva função
+ACOES = {
+    "1": cadastrar_cliente,
+    "2": listar_clientes,
+    "3": procurar_cliente,
+    "4": ver_agencia,
+    "5": cadastrar_conta,
+    "6": listar_contas,
+    "7": procurar_conta,
+    "8": procurar_contas_por_cpf,
+    "9": consultar_saldo,
+    "10": depositar,
+    "11": sacar,
+    "12": transferir,
+    "13": montante_total,
+    "14": contas_saldo_positivo,
+    "15": conta_maior_saldo,
+    "16": conta_menor_saldo,
+    "17": mostrar_dashboard,
+}
+
+
+# Função principal que controla o ciclo de vida do banco e o loop do menu
 def main():
-    # Carrega os dados iniciais do sistema (clientes, agências e contas) a partir do armazenamento
-    dados_iniciais = carregar_dados()
-    clientes = dados_iniciais[0]
-    agencias = dados_iniciais[1]
-    contas = dados_iniciais[2]
-
-    rodando = True
-
-    # Loop principal do programa, que exibe o menu e processa as opções escolhidas pelo usuário
-    while rodando:
-        # Exibe o menu de opções do programa
-        menu()
-        opcao = input("Escolha uma opcao: ")
-
-        # Processa a opção escolhida pelo usuário e chama as funções correspondentes dos módulos importados
-        # 1 - Cadastrar cliente
-        if opcao == "1":
-            # Solicita o CPF e deixa só os números (aceita com ou sem pontos e traço)
-            cpf = limpar_cpf(input("CPF do cliente: "))
-
-            # Primeiro valida o CPF, ANTES de pedir os outros dados
-            if validar_cpf(cpf) == False:
-                print("CPF inválido! Precisa ter 11 números e os 2 últimos dígitos (verificadores) corretos.")
-            # Depois verifica se o CPF já está cadastrado
-            elif procurar_cliente(clientes, cpf) != False:
-                print("Este CPF já está cadastrado no sistema!")
-            # Só pede os dados restantes se o CPF for válido e novo
-            else:
-                nome = input("Nome do cliente: ")
-                data_nascimento = input("Data de nascimento: ")
-                email = input("Email: ")
-                telefone = input("Telefone: ")
-                endereco = input("Endereco: ")
-
-                # A própria função cadastrar_cliente já mostra a mensagem de sucesso
-                cadastrar_cliente(clientes, nome, cpf, data_nascimento, email, telefone, endereco)
-                # Salva os dados atualizados no armazenamento
-                salvar_dados(clientes, agencias, contas)
-
-        # 2 - Listar clientes    
-        elif opcao == "2":
-            # Chama a função para listar todos os clientes cadastrados no sistema
-            listar_clientes(clientes)
-
-        # 3 - Procurar cliente
-        elif opcao == "3":
-            # Solicita ao usuário o CPF do cliente que deseja procurar e chama a função correspondente
-            cpf_busca = input("CPF do cliente: ")
-            cliente_encontrado = procurar_cliente(clientes, cpf_busca)
-            
-            # Verifica se o cliente foi encontrado e exibe os dados correspondentes ou uma mensagem de erro
-            if cliente_encontrado:
-                print("\nDados:")
-                print("Nome:", cliente_encontrado["nome"])
-                print("CPF:", cliente_encontrado["cpf"])
-                print("Data de Nascimento:", cliente_encontrado["data_nascimento"])
-                print("Email:", cliente_encontrado["email"])
-                print("Telefone:", cliente_encontrado["telefone"])
-                print("Endereco:", cliente_encontrado["endereco"])
-            else:
-                print("\nCliente não encontrado.")
-
-        # 4 - Cadastrar agência        
-        elif opcao == "4":
-            # Solicita ao usuário o número da agência que deseja cadastrar e verifica se ela já está cadastrada
-            numero_agencia = input("Número da agência: ")
-            agencia_existente = procurar_agencia(agencias, numero_agencia)
-
-            # Se a agência não estiver cadastrada, solicita o nome da agência e chama a função para cadastrá-la
-            if agencia_existente == False: 
-                nome_agencia = input("Nome da agencia: ")
-                telefone_agencia = input("Telefone da agência: ")
-                endereco_agencia = input("Endereço da agência: ")
-                cadastrar_agencia(agencias, numero_agencia, nome_agencia, telefone_agencia, endereco_agencia)
-                salvar_dados(clientes, agencias, contas)
-                print("Cadastrado com sucesso!")
-            # Se a agência já estiver cadastrada, exibe uma mensagem de erro    
-            else:
-                print("Esta agencia ja esta no sistema!")
-
-        # 5 - Listar agências    
-        elif opcao == "5":
-            # Chama a função para listar todas as agências cadastradas no sistema
-            listar_agencias(agencias)
-
-        # 6 - Procurar agência    
-        elif opcao == "6":
-            # Solicita ao utilizador o número da agência que deseja procurar
-            agencia_busca = input("Número da agência: ")
-            agencia_encontrada = procurar_agencia(agencias, agencia_busca)
-
-            # Verifica se a agência possui dados válidos
-            if agencia_encontrada:
-                print("\nDados:")
-                print("Numero:", agencia_encontrada["numero_agencia"])
-                print("Nome:", agencia_encontrada["nome"])
-                print("Telefone:", agencia_encontrada["telefone"])
-                print("Endereco:", agencia_encontrada["endereco"])
-            else:
-                print("\nAgência não encontrada.")
-
-       # 7 - Cadastrar conta
-        elif opcao == "7":
-            numero_conta = input("Numero da conta: ")
-            conta_existente = procurar_conta(contas, numero_conta)
- 
-            if conta_existente == False:
-                numero_agencia = input("Numero da agencia: ")
-                agencia_encontrada = procurar_agencia(agencias, numero_agencia)
- 
-                if agencia_encontrada:
-                    # >>> TIPO DE CONTA <<<
-                    print("\nTipos de conta disponíveis:")
-                    print("1 - Corrente")
-                    print("2 - Poupança")
-                    print("3 - Salário")
-                    opcao_tipo = input("Escolha o tipo da conta (1/2/3): ").strip()
-
-                    mapa_tipos = {"1": "corrente", "2": "poupanca", "3": "salario"}
-                    tipo = mapa_tipos.get(opcao_tipo, "corrente")
-
-                    # Se for conta salário, solicita o empregador
-                    empregador = ""
-                    if tipo == "salario":
-                        empregador = input("Nome ou CNPJ da empresa empregadora: ").strip()
-
-                    texto_quantidade = input("Quantidade de titulares: ")
- 
-                    # Só aceita se for um número inteiro maior que zero
-                    if texto_quantidade.isdigit() == False or int(texto_quantidade) < 1:
-                        print("Quantidade de titulares inválida.")
-                    else:
-                        quantidade_titulares = int(texto_quantidade)
-                        cpfs_vinculados = []
-                        cancelado = False
- 
-                        while len(cpfs_vinculados) < quantidade_titulares and cancelado == False:
-                            cpf = limpar_cpf(input(f"CPF do titular {len(cpfs_vinculados) + 1} (Enter para cancelar): "))
-
-                            if cpf == "":
-                                cancelado = True
-                            elif procurar_cliente(clientes, cpf) == False:
-                                print("Cliente não encontrado!")
-                            elif cpf in cpfs_vinculados:
-                                print("Este CPF já é titular desta conta!")
-                            else:
-                                cpfs_vinculados.append(cpf)
-
-                        if cancelado:
-                            print("Cadastro de conta cancelado.")
-                        else:
-                            # Passa 'tipo' e 'empregador' para cadastrar_conta
-                            cadastrar_conta(contas, numero_conta, cpfs_vinculados, numero_agencia, tipo, empregador)
-                            salvar_dados(clientes, agencias, contas)
-                            print(f"Conta {tipo.capitalize()} cadastrada com sucesso!")
-                else:
-                    print("Agencia nao encontrada.")
-            else:
-                print("Este numero de conta ja esta no sistema!")
+    banco = Banco.get_instancia()
+    banco.iniciar()
+    try:
+        while True:
+            menu()
+            opcao = input("Escolha uma opcao: ").strip()
+            if opcao == "0":
+                print("\nObrigado. Volte sempre! | LMS Bank.")
+                break
+            acao = ACOES.get(opcao)
+            if acao is None:
+                print("\nOpção inválida! Tente novamente.")
+                continue
+            try:
+                acao(banco)
+            except BancoError as erro:
+                print(f"\n{erro}")
+    finally:
+        banco.encerrar()
 
 
-        # 8 - Listar contas
-        elif opcao == "8":
-            # Chama a função para listar todas as contas cadastradas no sistema
-            listar_contas(contas)
-
-
-        # 9 - Procurar conta por número da conta
-        elif opcao == "9":
-            # Solicita ao usuário o número da conta que deseja procurar e chama a função de procurar a conta
-            numero_conta = input("Numero da conta: ")
-            conta_encontrada = procurar_conta(contas, numero_conta)
-
-            # Verifica se a conta foi encontrada e chama a função de listar contas para exibir os dados da conta encontrada, ou exibe uma mensagem de erro caso não seja encontrada
-            if conta_encontrada:
-                listar_contas([conta_encontrada])
-            else:
-                print("\nConta não encontrada.")
-
-
-         # 10 - Procurar conta por CPF do titular da conta
-        elif opcao == "10":
-            # Solicita ao usuário o CPF do titular da conta que deseja procurar e chama a função de buscar contas por CPF
-            cpf_busca = limpar_cpf(input("CPF do titular: "))
-            contas_do_cliente = buscar_contas_por_cpf(contas, cpf_busca)
-
-            # Verifica se foram encontradas contas para o CPF fornecido e chama a função de listar contas para exibir os dados das contas encontradas, ou exibe uma mensagem de erro caso não sejam encontradas
-            if len(contas_do_cliente) > 0:
-                listar_contas(contas_do_cliente)
-            else:
-                print("\nNenhuma conta encontrada para este CPF.")
-
-        # 11 - Consultar saldo
-        elif opcao == "11":
-            # Solicita ao usuário o número da conta que deseja consultar e chama a função de consultar o saldo
-            numero_conta = input("Numero da conta: ")
-            consultar_saldo(contas, numero_conta)
-
-        # 12 - Depositar
-        elif opcao == "12":
-            numero_conta = input("Numero da conta: ")
-            texto_valor = input("Valor do deposito: ").replace(",", ".")
-
-            # Só aceita números (com no máximo um ponto decimal)
-            if texto_valor.replace(".", "", 1).isdigit() == False:
-                print("Valor inválido! Digite apenas números.")
-            else:
-                # Verifica se é conta salário para solicitar a identificação do depositante
-                conta_alvo = procurar_conta(contas, numero_conta)
-                depositante = ""
-                if conta_alvo and conta_alvo.get("tipo") == "salario":
-                    depositante = input("Identificação de quem está depositando (Empregador): ").strip()
-
-                depositar(contas, numero_conta, float(texto_valor), depositante)
-                salvar_dados(clientes, agencias, contas)
-
-        # 13 - Sacar
-        elif opcao == "13":
-            # Solicita ao usuário o número da conta e o valor do saque, e chama a função de sacar
-            numero_conta = input("Numero da conta: ")
-            texto_valor = input("Valor do saque: ").replace(",", ".")
-            if texto_valor.replace(".", "", 1).isdigit() == False:
-                print("Valor inválido! Digite apenas números.")
-            else:
-                sacar(contas, numero_conta, float(texto_valor))
-                # Salva os dados atualizados no armazenamento
-                salvar_dados(clientes, agencias, contas)
-
-        # 14 - Transferir
-        elif opcao == "14":
-            # Solicita ao usuário os números das contas de origem e destino, e o valor da transferência, e chama a função de transferir
-            numero_origem = input("Numero da conta de origem: ")
-            numero_destino = input("Numero da conta destino: ")
-            texto_valor = input("Valor da transferencia: ").replace(",", ".")
-            if texto_valor.replace(".", "", 1).isdigit() == False:
-                print("Valor inválido! Digite apenas números.")
-            else:
-                transferir(contas, numero_origem, numero_destino, float(texto_valor))
-                # Salva os dados atualizados no armazenamento
-                salvar_dados(clientes, agencias, contas)
-
-        # 15 - Montante total do banco
-        elif opcao == "15":
-            # Chama a função que calcula o montante total do banco e exibe o resultado
-            print("\n--- RELATORIO DO BANCO ---")
-            total = montante_total_banco(contas)
-            print(f"\nO montante total do banco é: R$ {total:.2f}\n")
-
-        # 16 - Montante total por agência    
-        elif opcao == "16":
-            # Pede ao usuário qual agência ele quer consultar
-            numero_agencia = input("Digite o número da agência para o relatório: ")
-            # Chama a função passando a lista de contas e a agência escolhida
-            total_agencia = montante_por_agencia(contas, numero_agencia)
-            print(f"\nO montante da agência {numero_agencia} é: R$ {total_agencia:.2f}\n")
-
-        # 17 - Agência com mais clientes
-        elif opcao == "17":
-            # Chama a função que encontra a agência com mais clientes e exibe o resultado
-            melhor_agencia = agencia_mais_clientes(contas)
-            # Verifica se a função retornou uma agência válida antes de exibir o resultado
-            if melhor_agencia:
-                print(f"\nA agência com mais clientes é: {melhor_agencia}\n")
-            else:
-                print("\nNenhuma agência encontrada.\n")
-
-        # 18 - Quantidade de contas conjuntas
-        elif opcao == "18":
-            print(f"\nQuantidade de contas conjuntas: {contar_contas_conjuntas(contas)}\n")
-
-        # 19 - Salvar
-        elif opcao == "19":
-            # Salva os dados do sistema (clientes, agências e contas) no armazenamento 
-            # O salvamento já é feito a cada operação, mas não sabemos se é melhor assim ou dessa forma
-            print("\nSalvando dados do sistema...\n")
-            salvar_dados(clientes, agencias, contas)
-            print("Dados salvos.")
-
-         # 20 - Aplicar rendimento na poupança
-        elif opcao == "20":
-            numero_conta = input("Número da conta poupança: ")
-            aplicar_rendimento(contas, numero_conta)
-            salvar_dados(clientes, agencias, contas)
-
-        # 21 - Contas com saldo positivo
-        elif opcao == "21":
-            linhas = linhas_contas_saldo_positivo(contas)
-            print("\n--- CONTAS COM SALDO POSITIVO ---")
-            if linhas:
-                # Imprime cada linha montada pela compreensão de listas
-                for linha in linhas:
-                    print(linha)
-            else:
-                print("Nenhuma conta com saldo positivo.")
-            print()
-
-        # 22 - Conta com maior saldo
-        elif opcao == "22":
-            conta = conta_maior_saldo(contas)
-            if conta:
-                print(f"\nMaior saldo: conta {conta['numero']} com R$ {conta['saldo']:.2f}\n")
-            else:
-                print("\nNenhuma conta cadastrada.\n")
-
-        # 23 - Conta com menor saldo
-        elif opcao == "23":
-            conta = conta_menor_saldo(contas)
-            if conta:
-                print(f"\nMenor saldo: conta {conta['numero']} com R$ {conta['saldo']:.2f}\n")
-            else:
-                print("\nNenhuma conta cadastrada.\n")
-
-        # 24 - Dashboard do banco
-        elif opcao == "24":
-            maior = conta_maior_saldo(contas)
-            menor = conta_menor_saldo(contas)
-            print("\n===== DASHBOARD LMS BANK =====")
-            print(f"Número de clientes: {len(clientes)}")
-            print(f"Número de agências: {len(agencias)}")
-            print(f"Número de contas:   {len(contas)}")
-            print(f"Saldo total:        R$ {montante_total_banco(contas):.2f}")
-            print(f"Saldo médio:        R$ {saldo_medio(contas):.2f}")
-            print(f"Maior saldo:        R$ {maior.get('saldo', 0.0):.2f} (conta {maior.get('numero', '-')})")
-            print(f"Menor saldo:        R$ {menor.get('saldo', 0.0):.2f} (conta {menor.get('numero', '-')})")
-            print("==============================\n")
-
-        # 0 - Sair
-        elif opcao == "0":
-            print("\nObrigado. Volte sempre! | LMS Bank.")
-            # Define a variável 'rodando' como False para encerrar o loop principal e sair do programa
-            rodando = False
-
-        # Caso o usuário digite uma opção inválida, exibe uma mensagem de erro
-        else:
-            print("\nOpção inválida! Tente novamente.")
-main()
+# Executa a aplicação apenas quando o arquivo é rodado diretamente
+if __name__ == "__main__":
+    main()
