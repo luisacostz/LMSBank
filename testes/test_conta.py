@@ -1,61 +1,88 @@
 '''
-Teste de unidade para o módulo "conta" do pacote "principal"
-Autores: Luísa Costa, Murilo Santana e Sarah Beatriz
-Descrição: Este módulo contém testes de unidade para as funções do módulo "conta.py", incluindo depósito, saque, transferência e busca de contas por CPF.
+Arquivo: test_conta.py
+Descrição: Testes principais de Conta, ContaCorrente, ContaPoupanca e ContaFactory.
+Rodar na raiz do projeto: python -m pytest
 '''
+from datetime import date
 
-import sys # Importa o módulo sys para manipulação do caminho do sistema
-import os # Importa o módulo os para manipulação de caminhos e arquivos
+import pytest
 
-# Adiciona a pasta raiz ao sys.path para permitir a importação do pacote "principal"
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-# Importa as funções do módulo "conta" do pacote "principal"
-from principal.conta import depositar, sacar, transferir, buscar_contas_por_cpf
-
-
-# Cria uma lista de contas para os testes, incluindo uma conta conjunta
-def criar_banco():
-    return [
-        {"numero": "12345", "clientes": ["11122233344"], "agencia": "0001", "tipo": "poupanca", "saldo": 0.0},
-        {"numero": "67890", "clientes": ["11122233344", "55566677788"], "agencia": "0001", "tipo": "poupanca", "saldo": 0.0}
-    ]
+from conta import Conta
+from conta_corrente import ContaCorrente
+from conta_factory import ContaFactory
+from conta_poupanca import ContaPoupanca
+from excecoes import SaldoInsuficienteError, TipoContaInvalidoError, ValorInvalidoError
 
 
-# Depósito com valor positivo aumenta o saldo
-def test_deposito():
-    banco = criar_banco()
-    depositar(banco, "12345", 200.0)
-    assert banco[0]["saldo"] == 200.0
+def test_conta_abstrata_nao_pode_ser_instanciada():
+    with pytest.raises(TypeError):
+        Conta("1")
 
 
-# Saque com valor menor ou igual ao saldo diminui o saldo
-def test_saque():
-    banco = criar_banco()
-    depositar(banco, "12345", 200.0)
-    sacar(banco, "12345", 150.0)
-    assert banco[0]["saldo"] == 50.0
+def test_depositar_e_valor_invalido():
+    conta = ContaCorrente("1")
+    conta.depositar(150.0)
+    assert conta.saldo == pytest.approx(150.0)
+    with pytest.raises(ValorInvalidoError):
+        conta.depositar(-5)
 
 
-# Saque maior que o saldo não altera o saldo
-def test_saque_sem_saldo():
-    banco = criar_banco()
-    depositar(banco, "12345", 100.0)
-    sacar(banco, "12345", 150.0)
-    assert banco[0]["saldo"] == 100.0
+def test_corrente_usa_cheque_especial_ate_o_limite():
+    conta = ContaCorrente("1", saldo=100.0)   # disponível: 100 + 500
+    conta.sacar(600.0)
+    assert conta.saldo == pytest.approx(-500.0)
+    with pytest.raises(SaldoInsuficienteError):
+        conta.sacar(0.01)
 
 
-# Transferência move o dinheiro de uma conta para a outra
-def test_transferencia():
-    banco = criar_banco()
-    depositar(banco, "12345", 300.0)
-    transferir(banco, "12345", "67890", 120.0)
-    assert banco[0]["saldo"] == 180.0
-    assert banco[1]["saldo"] == 120.0
+def test_poupanca_nao_tem_cheque_especial():
+    conta = ContaPoupanca("2", saldo=100.0)
+    with pytest.raises(SaldoInsuficienteError):
+        conta.sacar(100.01)
 
 
-# A busca por CPF encontra todas as contas do titular (inclusive conjuntas)
-def test_busca_contas_por_cpf():
-    banco = criar_banco()
-    assert len(buscar_contas_por_cpf(banco, "11122233344")) == 2
-    assert len(buscar_contas_por_cpf(banco, "55566677788")) == 1
-    assert buscar_contas_por_cpf(banco, "00000000000") == []
+def test_transferir_ok():
+    origem = ContaCorrente("1", saldo=100.0)
+    destino = ContaPoupanca("2", saldo=10.0)
+    origem.transferir(destino, 60.0)
+    assert origem.saldo == pytest.approx(40.0)
+    assert destino.saldo == pytest.approx(70.0)
+
+
+def test_transferir_sem_saldo_nao_mexe_no_destino():
+    origem = ContaPoupanca("2", saldo=10.0)
+    destino = ContaCorrente("1")
+    with pytest.raises(SaldoInsuficienteError):
+        origem.transferir(destino, 50.0)
+    assert destino.saldo == pytest.approx(0.0)
+
+
+def test_rendimento_antes_de_um_mes_nao_rende():
+    conta = ContaPoupanca("2", saldo=1000.0, ultimo_rendimento=date(2026, 10, 17))
+    assert conta.aplicar_rendimento(date(2026, 11, 16)) == 0.0
+
+
+def test_rendimento_de_um_mes():
+    conta = ContaPoupanca("2", saldo=1000.0, ultimo_rendimento=date(2026, 10, 17))
+    assert conta.aplicar_rendimento(date(2026, 11, 17)) == pytest.approx(5.0)  # 0,5%
+    assert conta.ultimo_rendimento == date(2026, 11, 17)
+
+
+def test_rendimento_de_tres_meses_e_composto():
+    conta = ContaPoupanca("2", saldo=1000.0, ultimo_rendimento=date(2026, 8, 17))
+    conta.aplicar_rendimento(date(2026, 11, 17))
+    assert conta.saldo == pytest.approx(1000.0 * 1.005 ** 3, abs=0.01)
+
+
+def test_factory_cria_cada_tipo_e_recusa_tipo_invalido():
+    assert isinstance(ContaFactory.criar("corrente", "1"), ContaCorrente)
+    assert isinstance(ContaFactory.criar("poupanca", "2"), ContaPoupanca)
+    with pytest.raises(TipoContaInvalidoError):
+        ContaFactory.criar("salario", "3")
+
+
+def test_to_dict_e_from_dict_sao_inversos():
+    for original in [ContaCorrente("1", saldo=10.0, limite=300.0),
+                     ContaPoupanca("2", saldo=20.0, ultimo_rendimento=date(2026, 9, 1))]:
+        copia = ContaFactory.from_dict(original.to_dict())
+        assert copia.to_dict() == original.to_dict()

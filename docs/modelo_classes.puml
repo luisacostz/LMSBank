@@ -53,22 +53,32 @@ abstract class Conta {
   + sacar(valor) : void
   + transferir(destino, valor) : void
   + consultar_saldo() : float
-  # {abstract} saldo_disponivel() : float
+  + {abstract} saldo_disponivel() : float
   + {abstract} tipo() : str
   + to_dict() : dict
 }
 
 class ContaCorrente {
   - limite : float = 500.0
-  # saldo_disponivel() : float
+  + saldo_disponivel() : float
   + tipo() : str
+  + to_dict() : dict
+  + {static} from_dict(dados, cliente, agencia) : ContaCorrente
 }
 
 class ContaPoupanca {
-  - taxa_rendimento : float = 0.01
-  # saldo_disponivel() : float
-  + aplicar_rendimento() : float
+  - taxa_rendimento : float = 0.005
+  - ultimo_rendimento : date
+  + saldo_disponivel() : float
+  + aplicar_rendimento(hoje) : float
   + tipo() : str
+  + to_dict() : dict
+  + {static} from_dict(dados, cliente, agencia) : ContaPoupanca
+}
+
+class ContaFactory <<Factory>> {
+  + {static} criar(tipo, numero, cliente, agencia, saldo) : Conta
+  + {static} from_dict(dados, cliente, agencia) : Conta
 }
 
 class Dashboard {
@@ -82,13 +92,28 @@ class Dashboard {
   - menor_saldo_conta : str
 }
 
+class BancoError <<Exception>>
+class ValorInvalidoError <<Exception>>
+class SaldoInsuficienteError <<Exception>>
+class OperacaoInvalidaError <<Exception>>
+class TipoContaInvalidoError <<Exception>>
+
 Banco "1" o-- "1" Agencia
 Banco "1" o-- "0..*" Cliente
 Banco "1" o-- "0..*" Conta
 Banco ..> Dashboard : gera
+Banco ..> ContaFactory : usa
+ContaFactory ..> Conta : cria
 Agencia "1" --> "0..*" Conta : agrupa
 Cliente "1" <-- "0..*" Conta : titular de
 Conta "0..*" --> "1" Agencia
 Conta <|-- ContaCorrente
 Conta <|-- ContaPoupanca
+BancoError <|-- ValorInvalidoError
+BancoError <|-- SaldoInsuficienteError
+BancoError <|-- OperacaoInvalidaError
+BancoError <|-- TipoContaInvalidoError
+Conta ..> SaldoInsuficienteError : lança
+Conta ..> ValorInvalidoError : lança
+note right of Conta : Template Method:\nsacar() usa saldo_disponivel()
 @enduml
