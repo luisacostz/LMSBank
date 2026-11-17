@@ -1,168 +1,90 @@
 '''
 Módulo: conta.py
-Autores: Luísa Costa, Murilo Santana e Sarah Beatriz
-Descrição: Este módulo contém funções para cadastrar, procurar, listar contas e realizar operações bancárias (como consultar saldo, depositar, sacar e transferir).
+Descrição: Classe Abstrata Conta. Guarda o que é comum a todas as contas e define o
+fluxo das operações. O que muda de um tipo para outro (saldo disponível e tipo)
+fica nas subclasses: ContaCorrente e ContaPoupanca.
+
+Padrão de projeto: TEMPLATE METHOD. O método sacar() define os passos (validar,
+conferir saldo, debitar) e chama saldo_disponivel(), que cada subclasse implementa.
 '''
 
-# Função para cadastrar uma nova conta no banco
-def cadastrar_conta(contas,numero, cliente_infomacao, numero_agencia, tipo, empregador=""):
-    tipo = tipo.strip().lower()
-    
-    # Cria um dicionário para representar a conta 
-    nova_conta = {
-        "numero": numero,
-        # Salva a lista de CPFs para contas conjuntas
-        "clientes": cliente_infomacao,
-        "agencia": numero_agencia, 
-        "saldo": 0.0,
-        "tipo": tipo
-    }
+from __future__ import annotations # para usar Conta como tipo de retorno de transferir() e from_dict()
+import math # para math.isfinite()
+from abc import ABC, abstractmethod # para criar classe abstrata
+from typing import TYPE_CHECKING # para evitar import circular
+from excecoes import OperacaoInvalidaError, SaldoInsuficienteError, ValorInvalidoError # para lançar exceções
 
-    
-    # Atributos específicos de cada conta
-    if tipo == "corrente":
-        nova_conta["limite"] = 500.0 # cheque especial
-    elif tipo == "poupanca":
-        nova_conta["taxa_rendimento"] = 0.01 # rendimento de 1%
-    elif tipo == "salario":
-        nova_conta["empregador"] = empregador if empregador else ""  # Nome do empregador
-    
-    # Adiciona a nova conta à lista do banco                                     
-    contas.append(nova_conta)
+# Será usado apenas para type hinting, não para criar objetos. Evita import circular.
+if TYPE_CHECKING:
+    from agencia import Agencia
+    from cliente import Cliente
 
-# Função para listar todas as contas cadastradas no banco
-def listar_contas(contas):
-    print("\nLista de Contas:")
+# Classe abstrata Conta. Define o que é comum a todas as contas e o fluxo das operações.
+class Conta(ABC):
+    def __init__(self, numero: str, saldo: float = 0.0,
+                 cliente: Cliente = None, agencia: Agencia = None) -> None:
+        self.numero = numero
+        self.saldo = saldo
+        self.cliente = cliente
+        self.agencia = agencia
 
-    # Monta os dados de cada conta usando uma compreensão de lista
-    blocos = [
-        f"Conta: {conta['numero']}\n"
-        f"Tipo: {conta.get('tipo', 'corrente').capitalize()}\n"
-        # Une todos os CPFs vinculados à conta separados por vírgula
-        f"CPFs: {', '.join(conta['clientes'])}\n"
-        f"Agência: {conta['agencia']}\n"
-        f"Saldo: R$ {conta['saldo']:.2f}\n"
-        "------------------------"
-        for conta in contas
-    ]
+    # Métodos que não mudam de uma conta para outra (depositar, sacar, transferir, consultar_saldo)
+    # Depositar pede apenas validar o valor e somar ao saldo. O saque precisa conferir o saldo disponível.
+    def depositar(self, valor: float) -> None:
+        self._validar_valor(valor)
+        self.saldo += valor
 
-    for bloco in blocos:
-        print(bloco)
+    # O método sacar() chama saldo_disponivel(), que cada subclasse implementa.
+    # Sacar pede validar o valor, conferir o saldo disponível e subtrair do saldo.
+    def sacar(self, valor: float) -> None:
+        # TEMPLATE METHOD: os passos são sempre estes, o saldo disponível varia.
+        self._validar_valor(valor)
+        disponivel = self.saldo_disponivel()
+        if valor > disponivel:
+            raise SaldoInsuficienteError(
+                f"Saldo insuficiente. Disponível: R$ {disponivel:.2f}."
+            )
+        self.saldo -= valor
 
-# Função para procurar uma conta pelo número
-def procurar_conta(contas, numero_conta):
-    for conta in contas:
-        # Verifica se o número da conta corresponde ao número fornecido e retorna a conta encontrada
-        if conta["numero"] == numero_conta:
-            return conta
-    return False
+    # Transferir pede validar o valor, sacar da conta origem e depositar na conta destino.
+    def transferir(self, destino: Conta, valor: float) -> None:
+        if destino is None or destino is self:
+            raise OperacaoInvalidaError("Escolha uma conta de destino diferente da origem.")
+        # Se o saque falhar, a exceção sobe e o destino NÃO recebe nada.
+        self.sacar(valor)
+        destino.depositar(valor)
 
-# Função para buscar todas as contas em que um CPF é titular
-def buscar_contas_por_cpf(contas, cpf):
-    encontradas = []
-    for conta in contas:
-        if cpf in conta["clientes"]:
-            encontradas.append(conta)
-    return encontradas
+    # Consultar saldo apenas devolve o saldo atual (não precisa de validação).
+    def consultar_saldo(self) -> float:
+        return self.saldo
 
+    # O que muda de uma conta para outra (saldo disponível e tipo) fica nas subclasses: ContaCorrente e ContaPoupanca.
+    # Saldo disponível é o que a conta pode gastar agora (a corrente soma o cheque especial).
+    @abstractmethod
+    def saldo_disponivel(self) -> float:
+        '''Quanto a conta pode gastar agora (a corrente soma o cheque especial).'''
 
-# Função para consultar o saldo de uma conta específica
-def consultar_saldo(contas, numero_conta):
-    for conta in contas:
-        # Verifica se o número da conta corresponde ao número fornecido e exibe o saldo atual
-        if conta["numero"] == numero_conta:
-            print(f"Tipo: {conta['tipo'].capitalize()}")
-            print(f"Saldo atual: R$ {conta['saldo']:.2f}")
-            if conta["tipo"] == "corrente":
-                print(f"Cheque especial: R$ {conta.get('limite', 0.0):.2f}")
-                print(f"Saldo total disponível: R$ {(conta['saldo'] + conta.get('limite', 0.0)):.2f}")
-            return
-    # Se a conta não for encontrada, exibe uma mensagem de erro    
-    print("Conta não encontrada.")
+    # O tipo da conta é usado no JSON e na exibição para o usuário.
+    @abstractmethod
+    def tipo(self) -> str:
+        '''Nome do tipo: "corrente" ou "poupanca".'''
 
+    # Conversão para o JSON 
+    def to_dict(self) -> dict:
+        # A conta guarda só o CPF do titular no JSON (não o objeto inteiro).
+        return {
+            "numero": self.numero,
+            "cliente_cpf": self.cliente.cpf if self.cliente else None,
+            "saldo": self.saldo,
+            "tipo": self.tipo(),
+        }
 
-# Função para depositar um valor em uma conta específica
-def depositar(contas, numero_conta, valor, depositante=""):
-    # Percorre a lista de contas para encontrar a conta correspondente ao número fornecido
-    for conta in contas:
-        if conta["numero"] == numero_conta:
-            if valor <= 0:
-                print("O valor do depósito deve ser positivo.")
-                return
-
-            # Regra para conta salário: só o empregador pode depositar
-            if conta["tipo"] == "salario":
-                if depositante != conta.get("empregador"):
-                    print("Depósito recusado: conta salário só aceita depósitos do empregador cadastrado.")
-                    return
-
-            conta["saldo"] += valor
-            print(f"Depósito de R${valor:.2f} realizado na conta {numero_conta}.")
-            return 
-    # Se a conta não for encontrada, exibe uma mensagem de erro
-    print("Conta não encontrada para depósito.")
-
-
-# Função para sacar um valor de uma conta específica
-def sacar(contas, numero_conta, valor):
-    for conta in contas:
-        if conta["numero"] == numero_conta:
-            if valor <= 0:
-                print("O valor do saque deve ser positivo.")
-                return
-
-            # Limite disponível varia de acordo com o tipo
-            saldo_disponivel = conta["saldo"]
-            if conta["tipo"] == "corrente":
-                saldo_disponivel += conta.get("limite", 0.0)
-
-            if saldo_disponivel >= valor:
-                conta["saldo"] -= valor
-                print(f"Saque de R${valor:.2f} realizado na conta {numero_conta}.")
-            else:
-                print("Saldo insuficiente para realizar o saque.")
-            return
-    # Se a conta não for encontrada, exibe uma mensagem de erro
-    print("Conta não encontrada para saque.")
-
-
-# Função para a poupança
-def aplicar_rendimento(contas, numero_conta):
-    conta = procurar_conta(contas, numero_conta)
-    if conta:
-        if conta["tipo"] == "poupanca":
-            ganho = conta["saldo"] * conta.get("taxa_rendimento", 0.01)
-            conta["saldo"] += ganho
-            print(f"Rendimento de R${ganho:.2f} creditado na conta {numero_conta}!")
-        else:
-            print("Operação inválida: esta conta não é poupança.")
-    else:
-        print("Conta não encontrada.")
-
-
-# Função para transferir um valor de uma conta para outra
-def transferir(contas, numero_origem, numero_destino, valor):
-    # Reutiliza a lógica existente para encontrar os dicionários de cada conta
-    conta_origem = procurar_conta(contas, numero_origem)
-    conta_destino = procurar_conta(contas, numero_destino)
-
-    # Verifica se ambas as contas existem e o valor da transferência é positivo
-    if conta_origem and conta_destino and valor > 0:
-        # Conta salário não transfere para fora
-        if conta_origem.get("tipo") == "salario":
-            print("Operação não permitida: conta salário não realiza transferências.")
-            return
-
-        # Considera o limite se for corrente
-        saldo_disponivel = conta_origem["saldo"]
-        if conta_origem.get("tipo") == "corrente":
-            saldo_disponivel += conta_origem.get("limite", 0.0)
-
-        if saldo_disponivel >= valor:
-            conta_origem["saldo"] -= valor
-            conta_destino["saldo"] += valor
-            print("Transferência realizada com sucesso!")
-        else:
-            print("Saldo insuficiente na conta de origem.")
-    else:
-        print("Contas inválidas ou valor incorreto.")
+    # Validar valor de depósito, saque ou transferência. Lança ValorInvalidoError se inválido.
+    @staticmethod
+    def _validar_valor(valor) -> None:
+        # O valor deve ser um número positivo (não zero, não negativo, não infinito, não NaN, não booleano).
+        if (isinstance(valor, bool)
+                or not isinstance(valor, (int, float))
+                or not math.isfinite(valor)
+                or valor <= 0):
+            raise ValorInvalidoError("O valor deve ser um número positivo.")

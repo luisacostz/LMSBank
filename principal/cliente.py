@@ -1,73 +1,42 @@
 '''
 Módulo: cliente.py
-Autores: Luísa Costa, Murilo Santana e Sarah Beatriz
-Descrição: Este módulo contém funções para cadastrar, procurar e listar clientes.
+Descrição: Classe Cliente. Um cliente pode ter N contas; cada conta tem 1 cliente.
 '''
 
-try:
-    from .cpf import validar_cpf, limpar_cpf
-except ImportError:
-    from cpf import validar_cpf, limpar_cpf
-
-# Função para cadastrar um novo cliente
-def cadastrar_cliente(clientes, nome, cpf, data_nascimento, email, telefone, endereco):
-    # Verifica se o CPF é válido
-    if validar_cpf(cpf) == False:
-        print("CPF inválido. Cliente não cadastrado.")
-        return False
-
-    # Cria um dicionário representando o novo cliente
-    novo_cliente = {
-        "nome": nome,
-        "cpf": cpf,
-        "data_nascimento": data_nascimento,
-        "email": email,
-        "telefone": telefone,
-        "endereco": endereco
-    }
-
-    # Adiciona o novo cliente à lista
-    clientes.append(novo_cliente)
-    print("Cliente cadastrado com sucesso.")
-    return True
+from __future__ import annotations
+from typing import TYPE_CHECKING, List
+if TYPE_CHECKING:
+    from conta import Conta
 
 
-# Função para procurar um cliente pelo CPF
-def procurar_cliente(clientes, cpf_busca):
-    # Remove a pontuação do CPF pesquisado
-    cpf_busca = limpar_cpf(cpf_busca)
+class Cliente:
+    def __init__(self, nome: str = "", cpf: str = "", data_nascimento: str = "",
+                 email: str = "", telefone: str = "", endereco: str = "",
+                 contas: List[Conta] = None) -> None:
+        self.nome = nome
+        self.cpf = cpf
+        self.data_nascimento = data_nascimento
+        self.email = email
+        self.telefone = telefone
+        self.endereco = endereco
+        self.contas = contas if contas is not None else []
 
-    # Percorre a lista de clientes
-    for cliente in clientes:
-        # Remove a pontuação do CPF cadastrado
-        cpf_cliente = limpar_cpf(cliente["cpf"])
+    def adicionar_conta(self, conta: Conta) -> None:
+        if conta not in self.contas:
+            self.contas.append(conta)
+        conta.cliente = self  # mantém os dois lados da ligação em sincronia
 
-        # Compara os CPFs sem pontuação
-        if cpf_cliente == cpf_busca:
-            return cliente
+    def listar_contas(self) -> List[Conta]:
+        return list(self.contas)
 
-    # Se não encontrar, retorna False
-    return False
+    def saldo_total(self) -> float:
+        return sum(conta.saldo for conta in self.contas)
 
+    def to_dict(self) -> dict:
+        # TODO 
+        raise NotImplementedError
 
-# Função para listar todos os clientes cadastrados
-def listar_clientes(clientes):
-    # Verifica se a lista de clientes está vazia
-    if len(clientes) == 0:
-        print("Nenhum cliente cadastrado.")
-    else:
-        # Percorre a lista de clientes e imprime os dados de cada um
-        print("\n--- Lista de Clientes ---")
-        blocos = [
-            f"Nome: {cliente['nome']}\n"
-            f"CPF: {cliente['cpf']}\n"
-            f"Nascimento: {cliente['data_nascimento']}\n"
-            f"Email: {cliente['email']}\n"
-            f"Telefone: {cliente['telefone']}\n"
-            f"Endereco: {cliente['endereco']}\n"
-            "-------------------------"
-            for cliente in clientes
-        ]
-
-        for bloco in blocos:
-            print(bloco)
+    @staticmethod
+    def from_dict(dados: dict) -> Cliente:
+        # TODO 
+        raise NotImplementedError

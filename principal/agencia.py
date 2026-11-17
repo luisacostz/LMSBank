@@ -1,49 +1,47 @@
 '''
 Módulo: agencia.py
-Autores: Luísa Costa, Murilo Santana e Sarah Beatriz
-Descrição: Este módulo contém funções para cadastrar, procurar e listar agências.
+Descrição: Classe Agencia. O banco tem apenas UMA agência.
 '''
 
-# Função para cadastrar uma nova agência
-def cadastrar_agencia(agencias, numero_agencia, nome, telefone, endereco):
-    # Cria um dicionário representando a nova agência com os dados fornecidos
-    nova_agencia = {
-        "numero_agencia": numero_agencia,
-        "nome": nome,
-        "telefone": telefone,
-        "endereco": endereco
-    }
-    # Adiciona a nova agência à lista de agências
-    agencias.append(nova_agencia)
+from __future__ import annotations # Permite usar a própria classe como tipo de retorno do método from_dict
+from typing import TYPE_CHECKING, List # Permite usar type hinting sem criar import circular
 
+# Será usado apenas para type hinting, não para criar objetos.
+if TYPE_CHECKING:
+    from conta import Conta
 
-# Função para procurar uma agência pelo número
-def procurar_agencia(agencias, numero_procurado):
-    # Percorre a lista de agências para encontrar uma com o número correspondente
-    for agencia in agencias:
-        if agencia["numero_agencia"] == numero_procurado:
-            # Retorna a agência encontrada
-            return agencia
-    # Se não encontrar a agência, retorna False
-    return False
+# 
+class Agencia:
+    # Inicializa a agência com os dados informados. Se não informar, usa valores vazios.
+    def __init__(self, numero_agencia: str = "", nome: str = "", telefone: str = "",
+                 endereco: str = "", contas: List[Conta] = None) -> None:
+        self.numero_agencia = numero_agencia
+        self.nome = nome
+        self.telefone = telefone
+        self.endereco = endereco
+        self.contas = contas if contas is not None else []
 
+    # Adiciona uma conta à agência. Se a conta já estiver na lista, não adiciona de novo.
+    def adicionar_conta(self, conta: Conta) -> None:
+        if conta not in self.contas:
+            self.contas.append(conta)
+        conta.agencia = self
 
-# Função para listar todas as agências cadastradas
-def listar_agencias(agencias):
-    # Verifica se a lista de agências está vazia
-    if len(agencias) == 0:
-        print("Nenhuma agencia cadastrada.")
-    # Percorre a lista de agências e exibe os dados de cada uma
-    else:
-        print("\n--- LISTA DE AGENCIAS ---")
-        blocos = [
-            f"Número: {agencia['numero_agencia']}\n"
-            f"Nome: {agencia['nome']}\n"
-            f"Telefone: {agencia['telefone']}\n"
-            f"Endereço: {agencia['endereco']}\n"
-            "--------------------------------------"
-            for agencia in agencias
-        ]
+    # Remove uma conta da agência. Se a conta não estiver na lista, não faz nada.
+    def listar_contas(self) -> List[Conta]:
+        return list(self.contas)
 
-        for bloco in blocos:
-            print(bloco)
+    # Retorna o montante total de dinheiro na agência (soma dos saldos das contas).
+    def montante_total(self) -> float:
+        return sum(conta.saldo for conta in self.contas)
+
+    # 
+    def to_dict(self) -> dict:
+        # TODO 
+        raise NotImplementedError
+
+    #
+    @staticmethod
+    def from_dict(dados: dict) -> Agencia:
+        # TODO 
+        raise NotImplementedError
