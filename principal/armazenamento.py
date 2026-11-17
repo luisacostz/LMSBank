@@ -4,36 +4,28 @@ Autores: Luísa Costa, Murilo Santana e Sarah Beatriz
 Descrição: Este módulo contém funções para salvar e carregar dados do banco de dados (JSON com dicionário).
 '''
 
-import json # Importa a biblioteca 'json' para manipulação de arquivos JSON
-import os # Importa a biblioteca 'os' para verificar a existência de arquivos
+# Importa o módulo json para ler e escrever estruturas de dados no formato JSON
+import json
 
-# Função para salvar os dados do banco de dados em um arquivo JSON
-def salvar_dados(clientes, agencias, contas):
-    # Agora o JSON é um dicionário com três listas de dicionários
-    dados = {
-        "clientes": clientes,
-        "agencias": agencias,
-        "contas": contas
-    }
-    # Abre o arquivo 'banco.json' em modo de escrita ('w' - write)
-    arquivo_banco = open("banco.json", "w", encoding="utf-8")
-    # Converte e salva o dicionário no arquivo JSON
-    json.dump(dados, arquivo_banco, ensure_ascii=False, indent=4)
-    # Fecha o arquivo para salvar as alterações e liberar recursos do sistema
-    arquivo_banco.close()
+# Importa o módulo os para verificar a existência de arquivos no sistema operacional
+import os
+
+# Define o nome e caminho padrão do arquivo de armazenamento do banco
+CAMINHO_PADRAO = "banco.json"
 
 
-# Função para carregar os dados do banco de dados a partir de um arquivo JSON
-def carregar_dados():
-    # Verifica se o arquivo 'banco.json' existe
-    if os.path.exists("banco.json") == True:
-        arquivo_banco = open("banco.json", "r", encoding="utf-8")
-        # Carrega o dicionário do arquivo JSON
-        dados = json.load(arquivo_banco)
-        arquivo_banco.close()
+# Função para ler os dados armazenados no arquivo JSON
+def ler_json(caminho: str = CAMINHO_PADRAO) -> dict:
+    # Verifica se o arquivo JSON existe; caso não exista, retorna a estrutura inicial vazia
+    if not os.path.exists(caminho):
+        return {"agencia": None, "clientes": [], "contas": []}
+    # Abre o arquivo no modo de leitura com codificação UTF-8 e converte o JSON em dicionário Python
+    with open(caminho, "r", encoding="utf-8") as arquivo:
+        return json.load(arquivo)
 
-        # Retorna as listas de clientes, agências e contas separadamente
-        return dados["clientes"], dados["agencias"], dados["contas"]
-    else:
-        # Se o arquivo não existir, retorna listas vazias para clientes, agências e contas
-        return [], [], []
+
+# Função para gravar os dados do banco no arquivo JSON
+def gravar_json(dados: dict, caminho: str = CAMINHO_PADRAO) -> None:
+    # Abre o arquivo no modo de escrita com codificação UTF-8 e salva o dicionário formatado
+    with open(caminho, "w", encoding="utf-8") as arquivo:
+        json.dump(dados, arquivo, ensure_ascii=False, indent=4)
