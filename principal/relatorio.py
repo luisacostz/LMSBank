@@ -50,7 +50,7 @@ def linhas_contas_saldo_positivo(contas):
     ]   
 
 
-# --- Apelidos (aliases) para garantir compatibilidade com os testes ---
+# --- Nomes alternativos para testes ---
 saldo_total_banco = montante_total_banco
 contas_saldo_positivo = contas_com_saldo_positivo
 maior_saldo = conta_maior_saldo
