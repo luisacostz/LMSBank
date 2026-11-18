@@ -25,10 +25,6 @@
       <label for="dep_valor">Valor</label>
       <input type="text" id="dep_valor" name="valor" placeholder="0,00" required>
     </div>
-    <div class="campo">
-      <label for="dep_depositante">Depositante (só p/ conta salário)</label>
-      <input type="text" id="dep_depositante" name="depositante">
-    </div>
     <button class="botao" type="submit">Depositar</button>
   </form>
 
@@ -69,15 +65,6 @@
       <input type="text" id="sal_numero" name="numero_conta" required>
     </div>
     <button class="botao" type="submit">Consultar</button>
-  </form>
-
-  <form class="form-ficha" method="post" action="{{ url_for('op_rendimento') }}">
-    <h3>Aplicar rendimento (poupança)</h3>
-    <div class="campo">
-      <label for="rend_numero">Número da conta poupança</label>
-      <input type="text" id="rend_numero" name="numero_conta" required>
-    </div>
-    <button class="botao" type="submit">Aplicar rendimento</button>
   </form>
 
 </div>

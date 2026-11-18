@@ -39,26 +39,13 @@
     <p>R$ {{ "%.2f"|format(dados.menor_saldo) }}{% if dados.menor_saldo_conta %} <small>| Conta {{ dados.menor_saldo_conta }}</small>{% endif %}</p>
   </div>
   <div class="cartao-saldo">
-    <h3>Agência com mais clientes</h3>
-    <p>{{ agencia_destaque or '—' }}</p>
+    <h3>Agência</h3>
+    <p>{% if agencia %}{{ agencia.numero_agencia }} <small>| {{ agencia.nome }}</small>{% else %}—{% endif %}</p>
   </div>
   <div class="cartao-saldo">
-    <h3>Contas conjuntas</h3>
-    <p>{{ contas_conjuntas }}</p>
+    <h3>Montante da agência</h3>
+    <p>R$ {{ "%.2f"|format(agencia.montante_total() if agencia else 0) }}</p>
   </div>
 </div>
 
-<div class="form-ficha" style="max-width:100%; margin-top:1.8rem;">
-  <h3>Montante por agência</h3>
-  <form method="get" action="{{ url_for('dashboard') }}" style="display:flex; gap:0.8rem; align-items:flex-end; flex-wrap:wrap;">
-    <div class="campo" style="flex:1; min-width:200px; margin-bottom:0;">
-      <label for="agencia">Número da agência</label>
-      <input type="text" id="agencia" name="agencia" value="{{ agencia_consultada or '' }}">
-    </div>
-    <button class="botao" type="submit">Calcular</button>
-  </form>
-  {% if agencia_consultada %}
-  <p style="margin-top:1rem;">Montante da agência {{ agencia_consultada }}: <strong>R$ {{ "%.2f"|format(montante_agencia) }}</strong></p>
-  {% endif %}
-</div>
 {% endblock %}

@@ -31,7 +31,7 @@
       <th>Conta</th>
       <th>Agência</th>
       <th>Tipo</th>
-      <th>Titular(es)</th>
+      <th>Titular</th>
       <th class="valor">Saldo</th>
     </tr>
   </thead>
@@ -39,9 +39,9 @@
     {% for conta in contas %}
     <tr>
       <td class="tabular">{{ conta.numero }}</td>
-      <td class="tabular">{{ conta.agencia }}</td>
-      <td>{{ conta.tipo|capitalize }}</td>
-      <td class="tabular">{{ conta.clientes|join(', ') }}</td>
+      <td class="tabular">{{ conta.agencia.numero_agencia if conta.agencia else '-' }}</td>
+      <td>{{ 'Poupança' if conta.tipo() == 'poupanca' else 'Corrente' }}</td>
+      <td>{{ conta.cliente.nome if conta.cliente else '-' }}</td>
       <td class="valor tabular">R$ {{ "%.2f"|format(conta.saldo) }}</td>
     </tr>
     {% endfor %}
