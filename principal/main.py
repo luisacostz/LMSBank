@@ -1,12 +1,5 @@
-'''
-Módulo: main.py
-Autores: Luísa Costa, Murilo Santana e Sarah Beatriz
-Descrição: Este módulo contém a função principal do programa, que é responsável por exibir o menu e chamar as funções dos outros módulos de acordo com a escolha do usuário.
-'''
-
 """
 Módulo: main.py
-Autores: Luísa Costa, Murilo Santana e Sarah Beatriz
 Descrição: Ponto de entrada da aplicação via console, gerenciando o menu interativo, entrada de dados e chamadas às operações do banco.
 """
 
